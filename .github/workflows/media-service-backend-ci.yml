@@ -1,0 +1,42 @@
+# workflow name
+
+name: media_service_backend CI
+
+# Controls when the workflow will run
+# push - all branch
+# pull_request - develop
+on:
+  push:
+    branches: [ '*' ]
+
+  pull_request:
+    branches: [ develop ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # docker container start
+      - name: Start containers
+        run: docker-compose -f "docker-compose.yml" up -d --build
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      # allow gradlew permission
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: build and Test with Gradle
+        run: ./gradlew --info build
