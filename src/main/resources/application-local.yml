@@ -7,8 +7,6 @@ spring:
     url: jdbc:postgresql://localhost:5432/media_service_db
     username: cotlin_user
     password: cotlin_password
+  exposed:
+    generate-ddl: true
 
-  jpa:
-    hibernate:
-      ddl-auto: create
-    show-sql: true
