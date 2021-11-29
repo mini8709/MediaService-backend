@@ -1,6 +1,6 @@
 # workflow name
 
-name: media_service_backend CI
+name: CI
 
 # Controls when the workflow will run
 # push - all branch
@@ -38,5 +38,14 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: build and Test with Gradle
+      - name: build with Gradle
         run: ./gradlew --info build
+
+      - name: Test with Gradle
+        run: ./gradlew test
+
+      - name: Upload coverate to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./build/reports/jacoco/test/jacocoTestReport.xml
