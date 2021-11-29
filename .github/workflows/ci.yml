@@ -50,5 +50,5 @@ jobs:
       - name: Upload coverage to Codecov
         env:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./build/reports/jacoco/test/jacocoTestReport.xml
+          file: ./build/jacoco.html
         run: bash <(curl -s https://codecov.io/bash)
