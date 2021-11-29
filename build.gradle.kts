@@ -7,7 +7,7 @@ plugins {
     kotlin("jvm") version "1.6.0"
     kotlin("plugin.spring") version "1.6.0"
     kotlin("plugin.jpa") version "1.6.0"
-    id("jacoco")
+    jacoco
 }
 
 group = "com.mediaservice"
@@ -77,4 +77,34 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+jacoco {
+    toolVersion = "0.8.7"
+}
+
+tasks.jacocoTestReport {
+    reports {
+        html.required.set(true)
+        xml.required.set(false)
+        csv.required.set(false)
+    }
+}
+
+tasks.jacocoTestCoverageVerification {
+    classDirectories.setFrom(
+        sourceSets.main.get().output.asFileTree.matching {
+            exclude("com/mediaservice/MediaServiceBackendApplicationKt.class")
+        }
+    )
+}
+
+val testCoverage by tasks.registering {
+    group = "verification"
+    description = "Runs the unit tests with coverage."
+
+    dependsOn(":test", ":jacocoTestReport", ":jacocoTestCoverageVerification")
+    val jacocoTestReport = tasks.findByName("jacocoTestReport")
+    jacocoTestReport?.mustRunAfter(tasks.findByName("test"))
+    tasks.findByName("jacocoTestCoverageVerification")?.mustRunAfter(jacocoTestReport)
 }
