@@ -1,12 +1,10 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("org.springframework.boot") version "2.6.0"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
-    kotlin("jvm") version "1.6.0"
-    kotlin("plugin.spring") version "1.6.0"
-    kotlin("plugin.jpa") version "1.6.0"
+    kotlin("jvm") version "1.5.0"
+    kotlin("plugin.spring") version "1.5.0"
     jacoco
 }
 
@@ -44,30 +42,6 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 
-jacoco {
-    toolVersion = "0.8.5"
-}
-
-tasks.jacocoTestReport {
-    reports {
-        xml.isEnabled = true
-        csv.isEnabled = true
-        html.isEnabled = true
-    }
-}
-
-tasks.test {
-    finalizedBy(tasks.jacocoTestReport)
-    useJUnitPlatform {
-        includeEngines("junit-jupiter", "spek2")
-    }
-
-    testLogging {
-        exceptionFormat = TestExceptionFormat.FULL
-        events("passed", "failed", "skipped")
-    }
-}
-
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
@@ -75,7 +49,7 @@ tasks.withType<KotlinCompile> {
     }
 }
 
-tasks.withType<Test> {
+tasks.test {
     useJUnitPlatform()
 }
 
@@ -84,20 +58,35 @@ jacoco {
 }
 
 tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+
     reports {
         html.required.set(false)
         xml.required.set(true)
         csv.required.set(false)
         html.outputLocation.set(file("$buildDir/jacoco.html"))
     }
+
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) {
+                exclude(
+                    "**/application/dto/**",
+                    "**/domain/**",
+                    "**/config/**",
+                    "**/web/**"
+                )
+            }
+        })
+    )
 }
 
 tasks.jacocoTestCoverageVerification {
-    classDirectories.setFrom(
-        sourceSets.main.get().output.asFileTree.matching {
-            exclude("com/mediaservice/MediaServiceBackendApplicationKt.class")
-        }
-    )
+    dependsOn(tasks.jacocoTestReport)
+
+    violationRules {
+        rule {}
+    }
 }
 
 val testCoverage by tasks.registering {

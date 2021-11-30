@@ -45,7 +45,7 @@ jobs:
         run: ./gradlew test
 
       - name: Test coverage
-        run: ./gradlew testCoverage
+        run: ./gradlew --stacktrace testCoverage
 
       - name: Upload coverage to Codecov
         env:
