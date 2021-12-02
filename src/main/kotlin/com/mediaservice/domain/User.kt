@@ -1,10 +1,11 @@
 package com.mediaservice.domain
 
-import com.mediaservice.application.dto.UserResponseDto
+import org.jetbrains.exposed.dao.UUIDEntity
+import org.jetbrains.exposed.dao.UUIDEntityClass
+import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.ResultRow
-import java.util.*
+import java.util.UUID
 
 object UserTable: UUIDTable("TB_USER") {
     val email: Column<String> = varchar("email", 255)
@@ -13,10 +14,16 @@ object UserTable: UUIDTable("TB_USER") {
 
 class User(var id: UUID, var email: String, var password: String) {
     companion object {
-        fun from(resultRow: ResultRow) = User(
-            id = resultRow[UserTable.id].value,
-            email = resultRow[UserTable.email],
-            password = resultRow[UserTable.password]
+        fun from(userEntity: UserEntity) = User(
+            id = userEntity.id.value,
+            email = userEntity.email,
+            password = userEntity.password
         )
     }
+}
+
+class UserEntity(id: EntityID<UUID>): UUIDEntity(id) {
+    companion object: UUIDEntityClass<UserEntity>(UserTable)
+    var email by UserTable.email
+    var password by UserTable.password
 }

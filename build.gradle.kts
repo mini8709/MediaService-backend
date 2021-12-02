@@ -74,7 +74,8 @@ tasks.jacocoTestReport {
                     "**/application/dto/**",
                     "**/domain/**",
                     "**/config/**",
-                    "**/web/**"
+                    "**/web/**",
+                    "**/exception/**"
                 )
             }
         })

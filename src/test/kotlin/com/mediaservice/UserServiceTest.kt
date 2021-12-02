@@ -3,17 +3,17 @@ package com.mediaservice
 import com.mediaservice.application.UserService
 import com.mediaservice.application.dto.UserResponseDto
 import com.mediaservice.domain.User
-import com.mediaservice.domain.UserRepository
+import com.mediaservice.domain.repository.UserRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.BDDMockito.given
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
-import java.util.*
+import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
-class UserServiceTests(
+class UserServiceTest(
     @Mock val userRepository: UserRepository
 ) {
     private val userService: UserService = UserService(this.userRepository)

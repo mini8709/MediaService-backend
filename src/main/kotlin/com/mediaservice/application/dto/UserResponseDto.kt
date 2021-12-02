@@ -1,11 +1,11 @@
 package com.mediaservice.application.dto
 
 import com.mediaservice.domain.User
-import java.util.*
+import java.util.UUID
 
 data class UserResponseDto(
-    val id: UUID,
-    val email: String) {
+        val id: UUID,
+        val email: String) {
     companion object {
         fun from(user: User) = UserResponseDto(
             id = user.id,
