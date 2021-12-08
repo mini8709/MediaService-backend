@@ -8,5 +8,4 @@ spring:
     username: cotlin_user
     password: cotlin_password
   exposed:
-    generate-ddl: true
-
+    show-sql: true
