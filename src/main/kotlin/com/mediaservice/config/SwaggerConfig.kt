@@ -14,9 +14,9 @@ import springfox.documentation.spring.web.plugins.Docket
 @Configuration
 class SwaggerConfig {
 
-    val title:String = "MediaSevice API";
-    val version:String = "1.0.0"
-    val description:String = "Tmax MediaService Toy Project"
+    val title: String = "MediaSevice API";
+    val version: String = "1.0.0"
+    val description: String = "Tmax MediaService Toy Project"
 
     @Bean
     fun api(): Docket {

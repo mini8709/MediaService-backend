@@ -7,7 +7,7 @@ import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.Column
 import java.util.UUID
 
-object UserTable: UUIDTable("TB_USER") {
+object UserTable : UUIDTable("TB_USER") {
     val email: Column<String> = varchar("email", 255)
     val password: Column<String> = varchar("password", 255)
 }
@@ -22,8 +22,9 @@ class User(var id: UUID, var email: String, var password: String) {
     }
 }
 
-class UserEntity(id: EntityID<UUID>): UUIDEntity(id) {
-    companion object: UUIDEntityClass<UserEntity>(UserTable)
+class UserEntity(id: EntityID<UUID>) : UUIDEntity(id) {
+    companion object : UUIDEntityClass<UserEntity>(UserTable)
+
     var email by UserTable.email
     var password by UserTable.password
 }
