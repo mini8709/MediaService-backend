@@ -9,3 +9,6 @@ spring:
     password: cotlin_password
   exposed:
     show-sql: true
+
+JWT:
+  secret: media_service_secret_authorization_jwt_token_media_service_secret_authorization_jwt_token

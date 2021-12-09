@@ -1,6 +1,7 @@
 package com.mediaservice.web
 
 import com.mediaservice.application.dto.ExceptionDto
+import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.DataNotFoundException
 import com.mediaservice.exception.ErrorCode
 import org.springframework.web.HttpRequestMethodNotSupportedException
@@ -11,6 +12,11 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 @RestControllerAdvice
 class GlobalControllerAdvice {
+    @ExceptionHandler(value = [BadRequestException::class])
+    fun badRequestException(e: BadRequestException): ExceptionDto {
+        return ExceptionDto(ErrorCode.WRONG_PASSWORD, e.message)
+    }
+
     @ExceptionHandler(value = [DataNotFoundException::class])
     fun dataNotFoundException(e: DataNotFoundException): ExceptionDto {
         return ExceptionDto(ErrorCode.ROW_DOES_NOT_EXIST, e.message)
