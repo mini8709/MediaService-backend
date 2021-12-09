@@ -15,7 +15,7 @@ import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
 class ProfileServiceTest(@Mock val profileRepository: ProfileRepository) {
-    private val profileService:ProfileService = ProfileService(this.profileRepository)
+    private val profileService: ProfileService = ProfileService(this.profileRepository)
     private lateinit var profile: Profile
     private lateinit var user: User
     private lateinit var userId: UUID
@@ -25,8 +25,8 @@ class ProfileServiceTest(@Mock val profileRepository: ProfileRepository) {
     fun setUp() {
         this.userId = UUID.randomUUID()
         this.profileId = UUID.randomUUID()
-        this.user = User(userId,"test@emai.com","password")
-        this.profile = Profile(profileId,user, "action", "19+", "image_url")
+        this.user = User(userId, "test@emai.com", "password")
+        this.profile = Profile(profileId, user, "action", "19+", "image_url")
     }
 
     @Test

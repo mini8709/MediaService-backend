@@ -66,5 +66,4 @@ class MediaSeriesServiceTest(
         //then
         assert(this.mediaAllSeries.title == mediaAllSeriesResponseDto.title)
     }
-
 }

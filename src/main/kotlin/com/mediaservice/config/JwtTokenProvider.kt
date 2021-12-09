@@ -13,7 +13,6 @@ import java.util.Date
 import java.util.UUID
 import javax.servlet.http.HttpServletRequest
 
-
 @Component
 class JwtTokenProvider(env: Environment) {
     val signingKey = env.getProperty("JWT.secret")?.toByteArray()

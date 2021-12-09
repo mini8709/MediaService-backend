@@ -7,14 +7,16 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
-
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(private val tokenProvider: JwtTokenProvider) : WebSecurityConfigurerAdapter() {
     override fun configure(http: HttpSecurity) {
-        http.httpBasic().disable()
+        http
+            .httpBasic().disable()
             .csrf().disable()
+
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+
             .and()
             .authorizeRequests()
             .antMatchers(
@@ -22,6 +24,7 @@ class SecurityConfig(private val tokenProvider: JwtTokenProvider) : WebSecurityC
             )
             .permitAll()
             .anyRequest().authenticated()
+
             .and()
             .addFilterBefore(
                 JwtAuthenticationFilter(this.tokenProvider),

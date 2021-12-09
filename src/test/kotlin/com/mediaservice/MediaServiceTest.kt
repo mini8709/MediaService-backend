@@ -48,5 +48,4 @@ class MediaServiceTest(@Mock val mediaRepository: MediaRepository) {
         //then
         assert(this.media.name == mediaResponseDto.name)
     }
-
 }

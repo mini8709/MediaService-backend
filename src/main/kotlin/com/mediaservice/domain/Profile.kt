@@ -33,5 +33,4 @@ class ProfileEntity(id: EntityID<UUID>) : UUIDEntity(id) {
     var name by ProfileTable.name
     var rate by ProfileTable.rate
     var mainImage by ProfileTable.mainImage
-
 }

@@ -1,3 +1,6 @@
 package com.mediaservice.exception
 
-class BadRequestException(errorCode: ErrorCode, message: String): BaseRuntimeException(errorCode, message)
+class BadRequestException(
+    override val errorCode: ErrorCode,
+    override val message: String
+) : BaseRuntimeException(errorCode, message)

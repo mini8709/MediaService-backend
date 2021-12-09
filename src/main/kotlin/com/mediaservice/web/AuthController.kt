@@ -8,7 +8,6 @@ import com.mediaservice.application.dto.UserRequestDto
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 
-
 @RestController
 @RequestMapping("/api/v1/auth")
 class AuthController(private val userService: UserService) {

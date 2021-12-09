@@ -7,8 +7,7 @@ import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.Column
 import java.util.UUID
 
-
-object UserTable: UUIDTable("TB_USER") {
+object UserTable : UUIDTable("TB_USER") {
     val email: Column<String> = varchar("email", 255).uniqueIndex()
     val password: Column<String> = varchar("password", 255)
 }

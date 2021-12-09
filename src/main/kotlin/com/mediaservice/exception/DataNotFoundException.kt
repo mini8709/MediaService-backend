@@ -1,3 +1,6 @@
 package com.mediaservice.exception
 
-class DataNotFoundException(errorCode: ErrorCode, message: String): BaseRuntimeException(errorCode, message)
+class DataNotFoundException(
+    override val errorCode: ErrorCode,
+    override val message: String
+) : BaseRuntimeException(errorCode, message)

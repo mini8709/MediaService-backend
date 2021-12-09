@@ -49,7 +49,12 @@ class UserServiceTest(
     fun successCreateUser() {
         // given
         given(this.passwordEncoder.encode(this.requestDto.password)).willReturn("Encodedpassword")
-        given(this.userRepository.save(this.requestDto.email, passwordEncoder.encode(this.requestDto.password))).willReturn(this.user)
+        given(
+            this.userRepository.save(
+                this.requestDto.email,
+                passwordEncoder.encode(this.requestDto.password)
+            )
+        ).willReturn(this.user)
 
         // when
         val userResponseDto: UserResponseDto = this.userService.signUp(this.requestDto)
@@ -59,7 +64,7 @@ class UserServiceTest(
     }
 
     @Test
-    fun successLogIn(){
+    fun successLogIn() {
         // given
         given(this.userRepository.findByEmail(this.requestDto.email)).willReturn(this.user)
         given(this.passwordEncoder.matches(this.requestDto.password, this.user.password)).willReturn(true)
@@ -71,7 +76,6 @@ class UserServiceTest(
         // then
         assert(token == "valid token")
     }
-
 
 
 }
