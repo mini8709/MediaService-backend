@@ -11,11 +11,16 @@ object ActorTable : UUIDTable(name = "TB_ACTOR") {
     val name: Column<String> = varchar("name", 255)
 }
 
-class Actor(var id: UUID, var name: String) {
+class Actor(var id: UUID?, var name: String) {
     companion object {
         fun from(actorEntity: ActorEntity) = Actor(
             id = actorEntity.id.value,
             name = actorEntity.name
+        )
+
+        fun of(name: String) = Actor(
+            id = null,
+            name = name
         )
     }
 }
