@@ -31,13 +31,13 @@ class ProfileServiceTest(@Mock val profileRepository: ProfileRepository) {
 
     @Test
     fun successFindById() {
-        //given
+        // given
         given(this.profileRepository.findById(this.profileId)).willReturn(this.profile)
 
-        //when
+        // when
         val profileResponseDto: ProfileResponseDto = this.profileService.findById(this.profileId)
 
-        //then
+        // then
         assert(this.profile.name == profileResponseDto.name)
     }
 }

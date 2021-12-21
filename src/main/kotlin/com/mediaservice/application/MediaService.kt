@@ -3,7 +3,6 @@ package com.mediaservice.application
 import com.mediaservice.application.dto.MediaResponseDto
 import com.mediaservice.domain.repository.MediaRepository
 import com.mediaservice.exception.BadRequestException
-import com.mediaservice.exception.DataNotFoundException
 import com.mediaservice.exception.ErrorCode
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

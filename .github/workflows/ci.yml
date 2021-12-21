@@ -24,6 +24,9 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
+      - name: kotlin Lint
+        run: ./gradlew runKtlintCheckOverKotlinScripts
+
       # docker container start
       - name: Start containers
         run: docker-compose -f "docker-compose.yml" up -d --build

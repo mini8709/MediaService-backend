@@ -39,13 +39,13 @@ class MediaServiceTest(@Mock val mediaRepository: MediaRepository) {
 
     @Test
     fun successFindById() {
-        //given
+        // given
         given(this.mediaRepository.findById(this.mediaId)).willReturn(this.media)
 
-        //when
+        // when
         val mediaResponseDto: MediaResponseDto = this.mediaService.findById(this.mediaId)
 
-        //then
+        // then
         assert(this.media.name == mediaResponseDto.name)
     }
 }

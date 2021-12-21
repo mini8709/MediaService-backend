@@ -28,4 +28,3 @@ class UserEntity(id: EntityID<UUID>) : UUIDEntity(id) {
     var email by UserTable.email
     var password by UserTable.password
 }
-
