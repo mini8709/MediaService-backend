@@ -44,26 +44,26 @@ class MediaSeriesServiceTest(
 
     @Test
     fun successFindMediaSeriesById() {
-        //given
+        // given
         given(this.mediaSeriesRepository.findById(this.mediaSeriesId)).willReturn(this.mediaSeries)
 
-        //when
+        // when
         val mediaSeriesResponseDto = this.mediaSeriesService.findMediaSeriesById(this.mediaSeriesId)
 
-        //then
+        // then
         assert(this.mediaSeries.title == mediaSeriesResponseDto.title)
     }
 
     @Test
     fun successFindMediaAllSeriesById() {
-        //given
+        // given
         given(this.mediaAllSeriesRepository.findById(this.mediaAllSeriesId)).willReturn(this.mediaAllSeries)
 
-        //when
+        // when
         val mediaAllSeriesResponseDto: MediaAllSeriesResponseDto =
             this.mediaSeriesService.findMediaAllSeriesById(this.mediaAllSeriesId)
 
-        //then
+        // then
         assert(this.mediaAllSeries.title == mediaAllSeriesResponseDto.title)
     }
 }

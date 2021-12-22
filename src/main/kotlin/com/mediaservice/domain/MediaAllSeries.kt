@@ -18,8 +18,13 @@ object MediaAllSeriesTable : UUIDTable(name = "TB_MEDIAALLSERIES") {
 }
 
 class MediaAllSeries(
-    var id: UUID, var title: String, var synopsis: String, var trailer: String,
-    var thumbnail: String, var rate: String, var isSeries: Boolean
+    var id: UUID,
+    var title: String,
+    var synopsis: String,
+    var trailer: String,
+    var thumbnail: String,
+    var rate: String,
+    var isSeries: Boolean
 ) {
     companion object {
         fun from(mediaAllSeriesEntity: MediaAllSeriesEntity) = MediaAllSeries(

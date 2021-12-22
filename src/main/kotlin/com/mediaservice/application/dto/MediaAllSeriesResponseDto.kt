@@ -2,7 +2,6 @@ package com.mediaservice.application.dto
 
 import com.mediaservice.domain.MediaAllSeries
 
-
 data class MediaAllSeriesResponseDto(
     val title: String,
     val synopsis: String,

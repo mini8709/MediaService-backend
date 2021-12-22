@@ -5,7 +5,6 @@ import com.mediaservice.application.dto.MediaSeriesResponseDto
 import com.mediaservice.domain.repository.MediaAllSeriesRepository
 import com.mediaservice.domain.repository.MediaSeriesRepository
 import com.mediaservice.exception.BadRequestException
-import com.mediaservice.exception.DataNotFoundException
 import com.mediaservice.exception.ErrorCode
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

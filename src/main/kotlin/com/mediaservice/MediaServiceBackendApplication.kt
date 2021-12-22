@@ -7,7 +7,6 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
-
 @Retention(AnnotationRetention.BINARY)
 annotation class NoCoverageGenerated
 

@@ -7,7 +7,7 @@ import java.util.UUID
 
 @Repository
 class MediaAllSeriesRepository {
-    fun findById(id: UUID): MediaAllSeries?{
+    fun findById(id: UUID): MediaAllSeries? {
         return MediaAllSeriesEntity.findById(id)?.let {
             return MediaAllSeries.from(it)
         }

@@ -14,9 +14,7 @@ class SecurityConfig(private val tokenProvider: JwtTokenProvider) : WebSecurityC
         http
             .httpBasic().disable()
             .csrf().disable()
-
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-
             .and()
             .authorizeRequests()
             .antMatchers(
@@ -24,7 +22,6 @@ class SecurityConfig(private val tokenProvider: JwtTokenProvider) : WebSecurityC
             )
             .permitAll()
             .anyRequest().authenticated()
-
             .and()
             .addFilterBefore(
                 JwtAuthenticationFilter(this.tokenProvider),
