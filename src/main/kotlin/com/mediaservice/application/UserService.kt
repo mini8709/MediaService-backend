@@ -45,7 +45,7 @@ class UserService(
         val userForLogin = userRepository.findByEmail(userRequestDto.email)
             ?: throw BadRequestException(ErrorCode.INVALID_SIGN_IN, "WRONG EMAIL ${userRequestDto.email}")
         return if (passwordEncoder.matches(userRequestDto.password, userForLogin.password)) {
-            tokenProvider.createToken(userForLogin.id)
+            tokenProvider.createToken(userForLogin.id, userForLogin.role)
         } else {
             throw BadRequestException(ErrorCode.INVALID_SIGN_IN, "WRONG PASSWORD")
         }
