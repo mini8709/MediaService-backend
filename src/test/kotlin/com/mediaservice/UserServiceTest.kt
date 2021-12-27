@@ -1,80 +1,142 @@
 package com.mediaservice
 
 import com.mediaservice.application.UserService
-import com.mediaservice.application.dto.UserRequestDto
+import com.mediaservice.application.dto.SignInRequestDto
+import com.mediaservice.application.dto.SignUpRequestDto
 import com.mediaservice.application.dto.UserResponseDto
 import com.mediaservice.config.JwtTokenProvider
 import com.mediaservice.domain.Role
 import com.mediaservice.domain.User
 import com.mediaservice.domain.repository.UserRepository
+import com.mediaservice.exception.BadRequestException
+import com.mediaservice.exception.ErrorCode
+import io.mockk.clearAllMocks
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.BDDMockito.given
-import org.mockito.Mock
-import org.mockito.junit.jupiter.MockitoExtension
-import org.springframework.security.crypto.password.PasswordEncoder
 import java.util.UUID
+import kotlin.test.assertEquals
 
-@ExtendWith(MockitoExtension::class)
-class UserServiceTest(
-    @Mock val userRepository: UserRepository,
-    @Mock val passwordEncoder: PasswordEncoder,
-    @Mock val tokenProvider: JwtTokenProvider
-) {
-    private val userService: UserService = UserService(this.userRepository, this.passwordEncoder, this.tokenProvider)
+class UserServiceTest {
+    private var userRepository = mockk<UserRepository>()
+    private var tokenProvider = mockk<JwtTokenProvider>()
+    private var userService: UserService = UserService(this.userRepository, this.tokenProvider)
     private lateinit var user: User
     private lateinit var id: UUID
-    private lateinit var requestDto: UserRequestDto
 
     @BeforeEach
-    fun setUp() {
+    fun setup() {
+        clearAllMocks()
         this.id = UUID.randomUUID()
         this.user = User(id, "test@gmail.com", "1234", Role.USER)
-        this.requestDto = UserRequestDto("test@gmail.com", "1234")
     }
 
     @Test
     fun successFindById() {
         // given
-        given(this.userRepository.findById(this.id)).willReturn(this.user)
+        every { userRepository.findById(id) } returns this.user
 
         // when
         val userResponseDto: UserResponseDto = this.userService.findById(this.id)
 
         // then
-        assert(this.user.email == userResponseDto.email)
+        assertEquals(this.user.email, userResponseDto.email)
     }
 
     @Test
-    fun successCreateUser() {
-        // given
-        given(this.passwordEncoder.encode(this.requestDto.password)).willReturn("Encodedpassword")
-        given(
-            this.userRepository.save(
-                this.requestDto.email,
-                passwordEncoder.encode(this.requestDto.password)
-            )
-        ).willReturn(this.user)
+    fun failFindById() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            every { userRepository.findById(id) } returns null
 
-        // when
-        val userResponseDto: UserResponseDto = this.userService.signUp(this.requestDto)
+            // when
+            this.userService.findById(this.id)
+        }
 
         // then
-        assert(this.user.email == userResponseDto.email)
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
     }
 
     @Test
-    fun successLogIn() {
+    fun successSignUp() {
         // given
-        given(this.userRepository.findByEmail(this.requestDto.email)).willReturn(this.user)
-        given(this.passwordEncoder.matches(this.requestDto.password, this.user.password)).willReturn(true)
-        given(this.tokenProvider.createToken(this.user.id, Role.USER)).willReturn("valid token")
+        mockkObject(User)
+        val signUpRequestDto = SignUpRequestDto("test@gmail.com", "1234")
+
+        every { User.of(signUpRequestDto.email, signUpRequestDto.password, Role.USER) } returns this.user
+        every { userRepository.findByEmail(signUpRequestDto.email) } returns null
+        every { userRepository.save(user) } returns this.user
 
         // when
-        val token = this.userService.signIn(this.requestDto)
+        val userResponseDto: UserResponseDto = this.userService.signUp(signUpRequestDto)
 
         // then
-        assert(token == "valid token")
+        assertEquals(this.user.email, userResponseDto.email)
+    }
+
+    @Test
+    fun failSignUp_DuplicatedEmail() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            val signUpRequestDto = SignUpRequestDto("test@gmail.com", "1234")
+
+            every { userRepository.findByEmail(signUpRequestDto.email) } returns this.user
+
+            // when
+            this.userService.signUp(signUpRequestDto)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_ALREADY_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun successSignIn() {
+        // given
+        val signInRequestDto = SignInRequestDto("test@gmail.com", "1234")
+
+        every { userRepository.findByEmail(signInRequestDto.email) } returns this.user
+        every { tokenProvider.createToken(user.id!!, user.role) } returns "valid token"
+
+        // when
+        val token = this.userService.signIn(signInRequestDto)
+
+        // then
+        assertEquals(token, "valid token")
+    }
+
+    @Test
+    fun failSignIn_CannotFindUser() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            val signInRequestDto = SignInRequestDto("test@gmail.com", "1234")
+
+            every { userRepository.findByEmail(signInRequestDto.email) } returns null
+
+            // when
+            this.userService.signIn(signInRequestDto)
+        }
+
+        // then
+        assertEquals(ErrorCode.INVALID_SIGN_IN, exception.errorCode)
+    }
+
+    @Test
+    fun failSignIn_IncorrectPassword() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            val signInRequestDto = SignInRequestDto("test@gmail.com", "12345")
+
+            every { userRepository.findByEmail(signInRequestDto.email) } returns this.user
+
+            // when
+            this.userService.signIn(signInRequestDto)
+        }
+
+        // then
+        assertEquals(ErrorCode.INVALID_SIGN_IN, exception.errorCode)
     }
 }

@@ -1,7 +1,8 @@
 package com.mediaservice.web
 
 import com.mediaservice.application.UserService
-import com.mediaservice.application.dto.UserRequestDto
+import com.mediaservice.application.dto.SignInRequestDto
+import com.mediaservice.application.dto.SignUpRequestDto
 import com.mediaservice.application.dto.UserResponseDto
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -12,12 +13,12 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/auth")
 class AuthController(private val userService: UserService) {
     @PostMapping("/sign-up")
-    fun signUp(@RequestBody userRequestDto: UserRequestDto): UserResponseDto {
-        return this.userService.signUp(userRequestDto)
+    fun signUp(@RequestBody signUpRequestDto: SignUpRequestDto): UserResponseDto {
+        return this.userService.signUp(signUpRequestDto)
     }
 
     @PostMapping("/sign-in")
-    fun signIn(@RequestBody userRequestDto: UserRequestDto): String {
-        return this.userService.signIn(userRequestDto)
+    fun signIn(@RequestBody signInRequestDto: SignInRequestDto): String {
+        return this.userService.signIn(signInRequestDto)
     }
 }

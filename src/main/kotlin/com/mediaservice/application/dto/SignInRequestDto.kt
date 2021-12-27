@@ -1,6 +1,6 @@
 package com.mediaservice.application.dto
 
-data class UserRequestDto(
+data class SignInRequestDto(
     val email: String,
     val password: String
 )

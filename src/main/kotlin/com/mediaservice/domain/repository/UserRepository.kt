@@ -12,10 +12,10 @@ class UserRepository {
         return UserEntity.findById(id)?.let { User.from(it) }
     }
 
-    fun save(emailInput: String, passwordInput: String): User {
+    fun save(user: User): User {
         return UserEntity.new {
-            email = emailInput
-            password = passwordInput
+            email = user.email
+            password = user.password
         }.let { User.from(it) }
     }
 

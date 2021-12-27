@@ -9,7 +9,7 @@ data class UserResponseDto(
 ) {
     companion object {
         fun from(user: User) = UserResponseDto(
-            id = user.id,
+            id = user.id!!,
             email = user.email
         )
     }

@@ -44,9 +44,8 @@ dependencies {
 
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.mockito:mockito-core")
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("io.mockk:mockk:1.9.3")
+    testImplementation("org.jetbrains.kotlin", "kotlin-test-junit5", "1.5.0")
 }
 
 tasks.withType<KotlinCompile> {

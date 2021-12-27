@@ -18,13 +18,20 @@ object UserTable : UUIDTable("TB_USER") {
     val role = enumerationByName("role", 255, Role::class)
 }
 
-class User(var id: UUID, var email: String, var password: String, var role: Role) {
+class User(val id: UUID?, var email: String, var password: String, var role: Role) {
     companion object {
         fun from(userEntity: UserEntity) = User(
             id = userEntity.id.value,
             email = userEntity.email,
             password = userEntity.password,
             role = userEntity.role
+        )
+
+        fun of(email: String, password: String, role: Role) = User(
+            id = null,
+            email = email,
+            password = password,
+            role = role
         )
     }
 }
