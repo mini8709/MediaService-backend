@@ -22,7 +22,7 @@ class UserService(
     fun findById(id: UUID): UserResponseDto {
         return UserResponseDto.from(
             this.userRepository.findById(id) ?: throw BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH PROFILE $id"
+                ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH USER $id"
             )
         )
     }

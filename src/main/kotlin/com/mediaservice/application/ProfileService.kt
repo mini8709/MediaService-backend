@@ -13,10 +13,8 @@ class ProfileService(private val profileRepository: ProfileRepository) {
     @Transactional(readOnly = true)
     fun findById(id: UUID): ProfileResponseDto {
         return ProfileResponseDto.from(
-            this.profileRepository.findById(id) ?: throw BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                "NO SUCH USER $id"
-            )
+            this.profileRepository.findById(id)
+                ?: throw BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH PROFILE $id")
         )
     }
 }
