@@ -2,6 +2,7 @@ package com.mediaservice
 
 import com.mediaservice.application.ProfileService
 import com.mediaservice.application.dto.ProfileResponseDto
+import com.mediaservice.application.dto.SignInProfileResponseDto
 import com.mediaservice.domain.Profile
 import com.mediaservice.domain.Role
 import com.mediaservice.domain.User
@@ -58,5 +59,17 @@ class ProfileServiceTest {
 
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun successFindByUserId() {
+        // given
+        every { profileRepository.findByUserId(userId) } returns listOf(this.profile)
+
+        // when
+        val signInProfileResponseDto: List<SignInProfileResponseDto> = this.profileService.findByUserId(this.userId)
+
+        // then
+        assertEquals(this.profile.name, signInProfileResponseDto[0].name)
     }
 }

@@ -1,6 +1,7 @@
 package com.mediaservice.application
 
 import com.mediaservice.application.dto.ProfileResponseDto
+import com.mediaservice.application.dto.SignInProfileResponseDto
 import com.mediaservice.domain.repository.ProfileRepository
 import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.ErrorCode
@@ -16,5 +17,11 @@ class ProfileService(private val profileRepository: ProfileRepository) {
             this.profileRepository.findById(id)
                 ?: throw BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH PROFILE $id")
         )
+    }
+
+    @Transactional(readOnly = true)
+    fun findByUserId(id: UUID): List<SignInProfileResponseDto> {
+        return this.profileRepository.findByUserId(id)
+            .map { profile -> SignInProfileResponseDto.from(profile) }
     }
 }
