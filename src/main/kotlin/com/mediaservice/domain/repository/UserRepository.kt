@@ -16,6 +16,7 @@ class UserRepository {
         return UserEntity.new {
             email = user.email
             password = user.password
+            role = user.role
         }.let { User.from(it) }
     }
 
