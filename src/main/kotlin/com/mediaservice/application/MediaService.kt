@@ -9,7 +9,9 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Service
-class MediaService(private val mediaRepository: MediaRepository) {
+class MediaService(
+    private val mediaRepository: MediaRepository
+) {
     @Transactional(readOnly = true)
     fun findById(id: UUID): MediaResponseDto {
         return MediaResponseDto.from(

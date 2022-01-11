@@ -11,6 +11,9 @@ object MediaTable : UUIDTable(name = "TB_MEDIA") {
     val name: Column<String> = varchar("name", 255)
     val synopsis: Column<String> = text("synopsis")
     val order: Column<Int> = integer("order")
+    val url: Column<String> = varchar("url", 255)
+    val thumbnail: Column<String> = varchar("thumbnail", 255)
+    val runningTime: Column<Int> = integer("running_time")
     val mediaSeries = reference("media_series", MediaSeriesTable)
 }
 
@@ -19,6 +22,9 @@ class Media(
     var name: String,
     var synopsis: String,
     var order: Int,
+    var url: String,
+    var thumbnail: String,
+    var runningTime: Int,
     var mediaSeries: MediaSeries
 ) {
     companion object {
@@ -27,6 +33,9 @@ class Media(
             name = mediaEntity.name,
             synopsis = mediaEntity.synopsis,
             order = mediaEntity.order,
+            url = mediaEntity.url,
+            thumbnail = mediaEntity.thumbnail,
+            runningTime = mediaEntity.runningTime,
             mediaSeries = MediaSeries.from(mediaEntity.mediaSeries)
         )
     }
@@ -38,5 +47,8 @@ class MediaEntity(id: EntityID<UUID>) : UUIDEntity(id) {
     var name by MediaTable.name
     var synopsis by MediaTable.synopsis
     var order by MediaTable.order
+    var url by MediaTable.url
+    var thumbnail by MediaTable.thumbnail
+    var runningTime by MediaTable.runningTime
     var mediaSeries by MediaSeriesEntity referencedOn MediaTable.mediaSeries
 }

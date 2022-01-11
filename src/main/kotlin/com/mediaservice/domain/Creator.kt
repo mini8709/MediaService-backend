@@ -11,11 +11,16 @@ object CreatorTable : UUIDTable(name = "TB_CREATOR") {
     val name: Column<String> = varchar("name", 255)
 }
 
-class Creator(var id: UUID, var name: String) {
+class Creator(var id: UUID?, var name: String) {
     companion object {
         fun from(creatorEntity: CreatorEntity) = Creator(
             id = creatorEntity.id.value,
             name = creatorEntity.name
+        )
+
+        fun of(name: String) = Creator(
+            id = null,
+            name = name
         )
     }
 }

@@ -11,11 +11,16 @@ object GenreTable : UUIDTable(name = "TB_GENRE") {
     val name: Column<String> = varchar("name", 255)
 }
 
-class Genre(var id: UUID, var name: String) {
+class Genre(var id: UUID?, var name: String) {
     companion object {
         fun from(genreEntity: GenreEntity) = Genre(
             id = genreEntity.id.value,
             name = genreEntity.name
+        )
+
+        fun of(name: String) = Genre(
+            id = null,
+            name = name
         )
     }
 }
