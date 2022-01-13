@@ -10,12 +10,20 @@ class CreatorRepository {
     fun save(creator: Creator): Creator {
         return CreatorEntity.new {
             name = creator.name
+            isDeleted = creator.isDeleted
         }.let { Creator.from(it) }
     }
 
     fun findById(id: UUID): Creator? {
         return CreatorEntity.findById(id)?.let {
             Creator.from(it)
+        }
+    }
+
+    fun update(id: UUID, creator: Creator): Creator? {
+        return CreatorEntity.findById(id)?.let {
+            it.name = creator.name
+            return Creator.from(it)
         }
     }
 }

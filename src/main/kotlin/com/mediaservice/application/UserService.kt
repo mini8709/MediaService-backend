@@ -1,8 +1,8 @@
 package com.mediaservice.application
 
-import com.mediaservice.application.dto.SignInRequestDto
-import com.mediaservice.application.dto.SignUpRequestDto
-import com.mediaservice.application.dto.UserResponseDto
+import com.mediaservice.application.dto.user.SignInRequestDto
+import com.mediaservice.application.dto.user.SignUpRequestDto
+import com.mediaservice.application.dto.user.UserResponseDto
 import com.mediaservice.config.JwtTokenProvider
 import com.mediaservice.domain.Role
 import com.mediaservice.domain.User
@@ -30,7 +30,7 @@ class UserService(
     @Transactional
     fun signUp(signUpRequestDto: SignUpRequestDto): UserResponseDto {
         if (this.userRepository.findByEmail(signUpRequestDto.email) != null) {
-            throw BadRequestException(ErrorCode.ROW_ALREADY_EXIST, "DUPLICATE_EMAIL")
+            throw BadRequestException(ErrorCode.ROW_ALREADY_EXIST, "DUPLICATE EMAIL")
         }
 
         return UserResponseDto.from(

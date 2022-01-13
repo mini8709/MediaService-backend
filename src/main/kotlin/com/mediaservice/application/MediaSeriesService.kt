@@ -1,7 +1,7 @@
 package com.mediaservice.application
 
-import com.mediaservice.application.dto.MediaAllSeriesResponseDto
-import com.mediaservice.application.dto.MediaSeriesResponseDto
+import com.mediaservice.application.dto.media.MediaAllSeriesResponseDto
+import com.mediaservice.application.dto.media.MediaSeriesResponseDto
 import com.mediaservice.domain.repository.MediaAllSeriesRepository
 import com.mediaservice.domain.repository.MediaSeriesRepository
 import com.mediaservice.exception.BadRequestException

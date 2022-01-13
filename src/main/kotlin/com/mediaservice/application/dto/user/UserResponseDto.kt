@@ -1,4 +1,4 @@
-package com.mediaservice.application.dto
+package com.mediaservice.application.dto.user
 
 import com.mediaservice.domain.User
 import java.util.UUID

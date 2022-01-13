@@ -1,15 +1,19 @@
 package com.mediaservice
 
 import com.mediaservice.application.CreatorService
-import com.mediaservice.application.dto.CreatorCreateRequestDto
+import com.mediaservice.application.dto.media.CreatorCreateRequestDto
+import com.mediaservice.application.dto.media.CreatorUpdateRequestDto
 import com.mediaservice.domain.Creator
 import com.mediaservice.domain.Role
 import com.mediaservice.domain.User
 import com.mediaservice.domain.repository.CreatorRepository
+import com.mediaservice.exception.BadRequestException
+import com.mediaservice.exception.ErrorCode
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
@@ -22,6 +26,7 @@ class CreatorServiceTest {
     private lateinit var adminId: UUID
     private lateinit var userId: UUID
     private lateinit var creator: Creator
+    private lateinit var deletedCreator: Creator
     private lateinit var admin: User
     private lateinit var user: User
 
@@ -31,7 +36,8 @@ class CreatorServiceTest {
         this.creatorId = UUID.randomUUID()
         this.adminId = UUID.randomUUID()
         this.userId = UUID.randomUUID()
-        this.creator = Creator(this.creatorId, "test Creator")
+        this.creator = Creator(this.creatorId, "test Creator", isDeleted = false)
+        this.deletedCreator = Creator(this.creatorId, "test Creator", isDeleted = true)
         this.admin = User(this.adminId, "admin@gmail.com", "1234", Role.ADMIN)
         this.user = User(this.userId, "user@gmail.com", "1234", Role.USER)
     }
@@ -50,5 +56,52 @@ class CreatorServiceTest {
 
         // then
         assertEquals(this.creator.name, creatorResponseDto.name)
+    }
+
+    @Test
+    fun successUpdate() {
+        // given
+        val creatorUpdateRequestDto = CreatorUpdateRequestDto("test creator")
+
+        every { creatorRepository.findById(creatorId) } returns this.creator
+        every { creatorRepository.update(creatorId, creator) } returns this.creator
+
+        // when
+        val creatorResponseDto = this.creatorService.update(creatorId, creatorUpdateRequestDto)
+
+        // then
+        assertEquals(this.creator.name, creatorResponseDto.name)
+    }
+
+    @Test
+    fun failUpdate_CannotFindCreator() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            val creatorUpdateRequestDto = CreatorUpdateRequestDto("test Creator")
+
+            every { creatorRepository.findById(creatorId) } returns null
+
+            // when
+            this.creatorService.update(creatorId, creatorUpdateRequestDto)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun failUpdate_DeletedCreator() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            val creatorUpdateRequestDto = CreatorUpdateRequestDto("test Creator")
+
+            every { creatorRepository.findById(creatorId) } returns this.deletedCreator
+
+            // when
+            this.creatorService.update(creatorId, creatorUpdateRequestDto)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)
     }
 }

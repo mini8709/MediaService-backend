@@ -9,18 +9,21 @@ import java.util.UUID
 
 object ActorTable : UUIDTable(name = "TB_ACTOR") {
     val name: Column<String> = varchar("name", 255)
+    val isDeleted: Column<Boolean> = bool("isDeleted")
 }
 
-class Actor(var id: UUID?, var name: String) {
+class Actor(var id: UUID?, var name: String, var isDeleted: Boolean) {
     companion object {
         fun from(actorEntity: ActorEntity) = Actor(
             id = actorEntity.id.value,
-            name = actorEntity.name
+            name = actorEntity.name,
+            isDeleted = actorEntity.isDeleted
         )
 
         fun of(name: String) = Actor(
             id = null,
-            name = name
+            name = name,
+            isDeleted = false
         )
     }
 }
@@ -29,4 +32,5 @@ class ActorEntity(id: EntityID<UUID>) : UUIDEntity(id) {
     companion object : UUIDEntityClass<ActorEntity>(ActorTable)
 
     var name by ActorTable.name
+    var isDeleted by ActorTable.isDeleted
 }

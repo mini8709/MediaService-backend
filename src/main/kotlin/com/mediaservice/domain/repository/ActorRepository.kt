@@ -10,12 +10,20 @@ class ActorRepository {
     fun save(actor: Actor): Actor {
         return ActorEntity.new {
             name = actor.name
+            isDeleted = actor.isDeleted
         }.let { Actor.from(it) }
     }
 
     fun findById(id: UUID): Actor? {
         return ActorEntity.findById(id)?.let {
             Actor.from(it)
+        }
+    }
+
+    fun update(id: UUID, actor: Actor): Actor? {
+        return ActorEntity.findById(id)?.let {
+            it.name = actor.name
+            return Actor.from(it)
         }
     }
 }

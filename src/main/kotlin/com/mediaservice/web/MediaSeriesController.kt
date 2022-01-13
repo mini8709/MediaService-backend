@@ -1,8 +1,8 @@
 package com.mediaservice.web
 
 import com.mediaservice.application.MediaSeriesService
-import com.mediaservice.application.dto.MediaAllSeriesResponseDto
-import com.mediaservice.application.dto.MediaSeriesResponseDto
+import com.mediaservice.application.dto.media.MediaAllSeriesResponseDto
+import com.mediaservice.application.dto.media.MediaSeriesResponseDto
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping

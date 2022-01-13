@@ -1,7 +1,7 @@
 package com.mediaservice.application
 
-import com.mediaservice.application.dto.ProfileResponseDto
-import com.mediaservice.application.dto.SignInProfileResponseDto
+import com.mediaservice.application.dto.user.ProfileResponseDto
+import com.mediaservice.application.dto.user.SignInProfileResponseDto
 import com.mediaservice.domain.repository.ProfileRepository
 import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.ErrorCode

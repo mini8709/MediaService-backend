@@ -1,8 +1,8 @@
 package com.mediaservice.web
 
 import com.mediaservice.application.ProfileService
-import com.mediaservice.application.dto.ProfileResponseDto
-import com.mediaservice.application.dto.SignInProfileResponseDto
+import com.mediaservice.application.dto.user.ProfileResponseDto
+import com.mediaservice.application.dto.user.SignInProfileResponseDto
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping

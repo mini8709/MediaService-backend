@@ -1,6 +1,6 @@
 package com.mediaservice.web
 
-import com.mediaservice.application.dto.ExceptionDto
+import com.mediaservice.application.dto.common.ExceptionDto
 import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.DataNotFoundException
 import com.mediaservice.exception.ErrorCode

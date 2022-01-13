@@ -9,18 +9,21 @@ import java.util.UUID
 
 object CreatorTable : UUIDTable(name = "TB_CREATOR") {
     val name: Column<String> = varchar("name", 255)
+    val isDeleted: Column<Boolean> = bool("isDeleted")
 }
 
-class Creator(var id: UUID?, var name: String) {
+class Creator(var id: UUID?, var name: String, var isDeleted: Boolean) {
     companion object {
         fun from(creatorEntity: CreatorEntity) = Creator(
             id = creatorEntity.id.value,
-            name = creatorEntity.name
+            name = creatorEntity.name,
+            isDeleted = creatorEntity.isDeleted
         )
 
         fun of(name: String) = Creator(
             id = null,
-            name = name
+            name = name,
+            isDeleted = false
         )
     }
 }
@@ -29,4 +32,5 @@ class CreatorEntity(id: EntityID<UUID>) : UUIDEntity(id) {
     companion object : UUIDEntityClass<CreatorEntity>(CreatorTable)
 
     var name by CreatorTable.name
+    var isDeleted by CreatorTable.isDeleted
 }

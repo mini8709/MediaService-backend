@@ -1,4 +1,4 @@
-package com.mediaservice.application.dto
+package com.mediaservice.application.dto.common
 
 import com.mediaservice.exception.ErrorCode
 

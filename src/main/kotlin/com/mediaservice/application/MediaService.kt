@@ -1,6 +1,6 @@
 package com.mediaservice.application
 
-import com.mediaservice.application.dto.MediaResponseDto
+import com.mediaservice.application.dto.media.MediaResponseDto
 import com.mediaservice.domain.repository.MediaRepository
 import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.ErrorCode

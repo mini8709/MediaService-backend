@@ -9,18 +9,21 @@ import java.util.UUID
 
 object GenreTable : UUIDTable(name = "TB_GENRE") {
     val name: Column<String> = varchar("name", 255)
+    val isDeleted: Column<Boolean> = bool("isDeleted")
 }
 
-class Genre(var id: UUID?, var name: String) {
+class Genre(var id: UUID?, var name: String, var isDeleted: Boolean) {
     companion object {
         fun from(genreEntity: GenreEntity) = Genre(
             id = genreEntity.id.value,
-            name = genreEntity.name
+            name = genreEntity.name,
+            isDeleted = genreEntity.isDeleted
         )
 
         fun of(name: String) = Genre(
             id = null,
-            name = name
+            name = name,
+            isDeleted = false
         )
     }
 }
@@ -29,4 +32,5 @@ class GenreEntity(id: EntityID<UUID>) : UUIDEntity(id) {
     companion object : UUIDEntityClass<GenreEntity>(GenreTable)
 
     var name by GenreTable.name
+    var isDeleted by GenreTable.isDeleted
 }

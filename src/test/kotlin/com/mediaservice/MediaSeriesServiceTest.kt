@@ -1,7 +1,7 @@
 package com.mediaservice
 
 import com.mediaservice.application.MediaSeriesService
-import com.mediaservice.application.dto.MediaAllSeriesResponseDto
+import com.mediaservice.application.dto.media.MediaAllSeriesResponseDto
 import com.mediaservice.domain.Media
 import com.mediaservice.domain.MediaAllSeries
 import com.mediaservice.domain.MediaSeries
