@@ -3,6 +3,8 @@ package com.mediaservice.application
 import com.mediaservice.application.dto.media.CreatorCreateRequestDto
 import com.mediaservice.application.dto.media.CreatorResponseDto
 import com.mediaservice.application.dto.media.CreatorUpdateRequestDto
+import com.mediaservice.application.validator.IsDeletedValidator
+import com.mediaservice.application.validator.Validator
 import com.mediaservice.domain.Creator
 import com.mediaservice.domain.repository.CreatorRepository
 import com.mediaservice.exception.BadRequestException
@@ -29,9 +31,10 @@ class CreatorService(
             ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH CREATOR $id"
         )
 
-        if (!creatorForUpdate.isDeleted) {
-            creatorForUpdate.name = creatorCreateRequestDto.name
-        } else throw BadRequestException(ErrorCode.ROW_ALREADY_DELETED, "DELETED CREATOR")
+        val validator: Validator = IsDeletedValidator(creatorForUpdate.isDeleted, Creator.DOMAIN)
+        validator.validate()
+
+        creatorForUpdate.name = creatorCreateRequestDto.name
 
         return CreatorResponseDto.from(
             this.creatorRepository.update(

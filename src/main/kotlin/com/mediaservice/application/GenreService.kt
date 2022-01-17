@@ -3,6 +3,8 @@ package com.mediaservice.application
 import com.mediaservice.application.dto.media.GenreCreateRequestDto
 import com.mediaservice.application.dto.media.GenreResponseDto
 import com.mediaservice.application.dto.media.GenreUpdateRequestDto
+import com.mediaservice.application.validator.IsDeletedValidator
+import com.mediaservice.application.validator.Validator
 import com.mediaservice.domain.Genre
 import com.mediaservice.domain.repository.GenreRepository
 import com.mediaservice.exception.BadRequestException
@@ -30,9 +32,10 @@ class GenreService(
             ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH GENRE $id"
         )
 
-        if (!genreForUpdate.isDeleted) {
-            genreForUpdate.name = genreUpdateRequestDto.name
-        } else throw BadRequestException(ErrorCode.ROW_ALREADY_DELETED, "DELETED GENRE")
+        val validator: Validator = IsDeletedValidator(genreForUpdate.isDeleted, Genre.DOMAIN)
+        validator.validate()
+
+        genreForUpdate.name = genreUpdateRequestDto.name
 
         return GenreResponseDto.from(
             this.genreRepository.update(

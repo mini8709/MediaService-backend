@@ -14,6 +14,8 @@ object GenreTable : UUIDTable(name = "TB_GENRE") {
 
 class Genre(var id: UUID?, var name: String, var isDeleted: Boolean) {
     companion object {
+        const val DOMAIN = "GENRE"
+
         fun from(genreEntity: GenreEntity) = Genre(
             id = genreEntity.id.value,
             name = genreEntity.name,

@@ -14,6 +14,8 @@ object CreatorTable : UUIDTable(name = "TB_CREATOR") {
 
 class Creator(var id: UUID?, var name: String, var isDeleted: Boolean) {
     companion object {
+        const val DOMAIN = "CREATOR"
+
         fun from(creatorEntity: CreatorEntity) = Creator(
             id = creatorEntity.id.value,
             name = creatorEntity.name,

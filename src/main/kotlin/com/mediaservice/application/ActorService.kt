@@ -3,6 +3,8 @@ package com.mediaservice.application
 import com.mediaservice.application.dto.media.ActorCreateRequestDto
 import com.mediaservice.application.dto.media.ActorResponseDto
 import com.mediaservice.application.dto.media.ActorUpdateRequestDto
+import com.mediaservice.application.validator.IsDeletedValidator
+import com.mediaservice.application.validator.Validator
 import com.mediaservice.domain.Actor
 import com.mediaservice.domain.repository.ActorRepository
 import com.mediaservice.exception.BadRequestException
@@ -30,9 +32,10 @@ class ActorService(
             ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH ACTOR $id"
         )
 
-        if (!actorForUpdate.isDeleted) {
-            actorForUpdate.name = actorUpdateRequestDto.name
-        } else throw BadRequestException(ErrorCode.ROW_ALREADY_DELETED, "DELETED ACTOR")
+        val validator: Validator = IsDeletedValidator(actorForUpdate.isDeleted, Actor.DOMAIN)
+        validator.validate()
+
+        actorForUpdate.name = actorUpdateRequestDto.name
 
         return ActorResponseDto.from(
             this.actorRepository.update(

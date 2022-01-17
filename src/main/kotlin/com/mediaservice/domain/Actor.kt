@@ -14,6 +14,8 @@ object ActorTable : UUIDTable(name = "TB_ACTOR") {
 
 class Actor(var id: UUID?, var name: String, var isDeleted: Boolean) {
     companion object {
+        const val DOMAIN: String = "ACTOR"
+
         fun from(actorEntity: ActorEntity) = Actor(
             id = actorEntity.id.value,
             name = actorEntity.name,
