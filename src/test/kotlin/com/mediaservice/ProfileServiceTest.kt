@@ -21,10 +21,10 @@ import kotlin.test.assertEquals
 class ProfileServiceTest {
     private var profileRepository = mockk<ProfileRepository>()
     private var profileService: ProfileService = ProfileService(this.profileRepository)
-    private lateinit var profile: Profile
-    private lateinit var user: User
     private lateinit var userId: UUID
     private lateinit var profileId: UUID
+    private lateinit var user: User
+    private lateinit var profile: Profile
 
     @BeforeEach
     fun setUp() {
@@ -32,7 +32,7 @@ class ProfileServiceTest {
         this.userId = UUID.randomUUID()
         this.profileId = UUID.randomUUID()
         this.user = User(userId, "test@emai.com", "password", Role.USER)
-        this.profile = Profile(profileId, user, "action", "19+", "image_url")
+        this.profile = Profile(profileId, user, "action", "19+", "image_url", false)
     }
 
     @Test

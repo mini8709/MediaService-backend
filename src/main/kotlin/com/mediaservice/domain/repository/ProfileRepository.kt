@@ -13,6 +13,9 @@ class ProfileRepository {
     }
 
     fun findByUserId(id: UUID): List<Profile> {
-        return ProfileEntity.find { ProfileTable.user_id eq id }.map { Profile.from(it) }
+        return ProfileEntity.find {
+            ProfileTable.user_id eq id
+            ProfileTable.isDeleted eq false
+        }.map { Profile.from(it) }
     }
 }
