@@ -17,13 +17,15 @@ import io.mockk.mockkObject
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.mail.javamail.JavaMailSender
 import java.util.UUID
 import kotlin.test.assertEquals
 
 class UserServiceTest {
     private var userRepository = mockk<UserRepository>()
     private var tokenProvider = mockk<JwtTokenProvider>()
-    private var userService: UserService = UserService(this.userRepository, this.tokenProvider)
+    private val mailSender = mockk<JavaMailSender>()
+    private var userService: UserService = UserService(this.userRepository, this.tokenProvider, this.mailSender)
     private lateinit var user: User
     private lateinit var id: UUID
 

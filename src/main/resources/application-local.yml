@@ -1,5 +1,5 @@
 server:
-  port:8080
+  port: 8080
 
 spring:
   datasource:
@@ -9,6 +9,8 @@ spring:
     password: cotlin_password
   exposed:
     show-sql: true
+  config:
+    import: classpath:email-config.yml
 
 JWT:
   secret: media_service_secret_authorization_jwt_token_media_service_secret_authorization_jwt_token

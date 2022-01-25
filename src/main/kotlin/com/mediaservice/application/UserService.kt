@@ -11,6 +11,9 @@ import com.mediaservice.domain.User
 import com.mediaservice.domain.repository.UserRepository
 import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.ErrorCode
+import org.springframework.mail.MailException
+import org.springframework.mail.javamail.JavaMailSender
+import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -18,7 +21,8 @@ import java.util.UUID
 @Service
 class UserService(
     private val userRepository: UserRepository,
-    private val tokenProvider: JwtTokenProvider
+    private val tokenProvider: JwtTokenProvider,
+    private val mailSender: JavaMailSender
 ) {
     @Transactional(readOnly = true)
     fun findById(id: UUID): UserResponseDto {
@@ -56,5 +60,22 @@ class UserService(
 
         validator.validate()
         return tokenProvider.createToken(userForLogin.id!!, userForLogin.role)
+    }
+
+    // TODO: Delete at issue #83
+    @Transactional(readOnly = true)
+    fun testMail() {
+        try {
+            val message = this.mailSender.createMimeMessage()
+            val messageHelper = MimeMessageHelper(message, false, "UTF-8").apply {
+                setFrom("cotlin.dev@gmail.com")
+                setTo("jeonggon8709@gmail.com")
+                setSubject("test Subject")
+                setText("test Text")
+            }
+            this.mailSender.send(message)
+        } catch (e: MailException) {
+            e.printStackTrace()
+        }
     }
 }

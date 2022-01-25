@@ -36,3 +36,6 @@ out/
 .vscode/
 
 .DS_Store
+
+### For Project Security ###
+src/main/resources/email-config.yml
