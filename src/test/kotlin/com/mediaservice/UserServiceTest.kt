@@ -1,6 +1,7 @@
 package com.mediaservice
 
 import com.mediaservice.application.UserService
+import com.mediaservice.application.dto.user.PasswordUpdateRequestDto
 import com.mediaservice.application.dto.user.SignInRequestDto
 import com.mediaservice.application.dto.user.SignUpRequestDto
 import com.mediaservice.application.dto.user.UserResponseDto
@@ -27,6 +28,7 @@ class UserServiceTest {
     private val mailSender = mockk<JavaMailSender>()
     private var userService: UserService = UserService(this.userRepository, this.tokenProvider, this.mailSender)
     private lateinit var user: User
+    private lateinit var pwUpdatedUser: User
     private lateinit var id: UUID
 
     @BeforeEach
@@ -34,6 +36,7 @@ class UserServiceTest {
         clearAllMocks()
         this.id = UUID.randomUUID()
         this.user = User(id, "test@gmail.com", "1234", Role.USER)
+        this.pwUpdatedUser = User(id, "test@gmail.com", "test123!!", Role.USER)
     }
 
     @Test
@@ -140,5 +143,77 @@ class UserServiceTest {
 
         // then
         assertEquals(ErrorCode.INVALID_SIGN_IN, exception.errorCode)
+    }
+
+    @Test
+    fun successUpdatePassword() {
+        // given
+        val passwordUpdateRequestDto = PasswordUpdateRequestDto("1234", "test123!!")
+
+        every { userRepository.findById(id) } returns this.user
+        every { userRepository.update(id, user) } returns this.pwUpdatedUser
+
+        // when
+        val userResponseDto = this.userService.updatePassword(id, passwordUpdateRequestDto)
+
+        // then
+        assertEquals(this.pwUpdatedUser.id, userResponseDto.id)
+    }
+
+    @Test
+    fun failUpdatePassword_CannotFindUser() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            val passwordUpdateRequestDto = PasswordUpdateRequestDto("1234", "test123!!")
+            every { userRepository.findById(id) } returns null
+
+            // when
+            this.userService.updatePassword(id, passwordUpdateRequestDto)
+        }
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun failUpdatePassword_InvalidPassword() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            val passwordUpdateRequestDto = PasswordUpdateRequestDto("1233", "test123!!")
+            every { userRepository.findById(id) } returns this.user
+
+            // when
+            this.userService.updatePassword(id, passwordUpdateRequestDto)
+        }
+        // then
+        assertEquals(ErrorCode.INVALID_SIGN_IN, exception.errorCode)
+    }
+
+    @Test
+    fun failUpdatePassword_InvalidPasswordFormat() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            val passwordUpdateRequestDto = PasswordUpdateRequestDto("1234", "test1231")
+            every { userRepository.findById(id) } returns this.user
+
+            // when
+            this.userService.updatePassword(id, passwordUpdateRequestDto)
+        }
+        // then
+        assertEquals(ErrorCode.INVALID_FORMAT, exception.errorCode)
+    }
+
+    @Test
+    fun failUpdatePassword_CannotFindUpdatedUser() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            val passwordUpdateRequestDto = PasswordUpdateRequestDto("1234", "test123!!")
+            every { userRepository.findById(id) } returns this.user
+            every { userRepository.update(id, user) } returns null
+
+            // when
+            this.userService.updatePassword(id, passwordUpdateRequestDto)
+        }
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
     }
 }

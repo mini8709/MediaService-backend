@@ -34,6 +34,9 @@ class User(val id: UUID?, var email: String, var password: String, var role: Rol
             role = role
         )
     }
+    fun updatePassword(dstPassword: String) {
+        password = dstPassword
+    }
 }
 
 class UserEntity(id: EntityID<UUID>) : UUIDEntity(id) {

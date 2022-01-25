@@ -1,8 +1,10 @@
 package com.mediaservice.application
 
+import com.mediaservice.application.dto.user.PasswordUpdateRequestDto
 import com.mediaservice.application.dto.user.SignInRequestDto
 import com.mediaservice.application.dto.user.SignUpRequestDto
 import com.mediaservice.application.dto.user.UserResponseDto
+import com.mediaservice.application.validator.PasswordFormatValidator
 import com.mediaservice.application.validator.PasswordValidator
 import com.mediaservice.application.validator.Validator
 import com.mediaservice.config.JwtTokenProvider
@@ -77,5 +79,30 @@ class UserService(
         } catch (e: MailException) {
             e.printStackTrace()
         }
+    }
+
+    @Transactional
+    fun updatePassword(id: UUID, passwordUpdateRequestDto: PasswordUpdateRequestDto): UserResponseDto {
+        val user = this.userRepository.findById(id)
+            ?: throw BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH USER $id")
+
+        val validator = PasswordValidator(
+            passwordUpdateRequestDto.srcPassword,
+            user.password
+        )
+
+        validator.linkWith(
+            PasswordFormatValidator(
+                passwordUpdateRequestDto.dstPassword
+            )
+        )
+
+        validator.validate()
+
+        user.updatePassword(passwordUpdateRequestDto.dstPassword)
+        val updateUser = this.userRepository.update(id, user)
+            ?: throw BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH USER $id")
+
+        return UserResponseDto.from(updateUser)
     }
 }
