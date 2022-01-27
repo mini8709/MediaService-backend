@@ -9,6 +9,7 @@ spring:
     password: cotlin_password
   exposed:
     show-sql: true
+
   config:
     import: classpath:email-config.yml
 

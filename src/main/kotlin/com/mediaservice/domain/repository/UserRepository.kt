@@ -23,4 +23,13 @@ class UserRepository {
     fun findByEmail(username: String): User? {
         return UserEntity.find { UserTable.email eq username }.firstOrNull()?.let { User.from(it) }
     }
+
+    fun update(id: UUID, user: User): User? {
+        return UserEntity.findById(id)?.let {
+            it.email = user.email
+            it.password = user.password
+            it.role = user.role
+            return User.from(it)
+        }
+    }
 }
