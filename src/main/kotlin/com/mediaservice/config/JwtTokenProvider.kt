@@ -1,6 +1,7 @@
 package com.mediaservice.config
 
 import com.mediaservice.domain.Role
+import com.mediaservice.exception.ErrorCode
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jws
 import io.jsonwebtoken.Jwts
@@ -27,13 +28,13 @@ class JwtTokenProvider(env: Environment) {
         return Jwts.builder()
             .setClaims(claims)
             .setIssuedAt(now)
-            .setExpiration(Date(now.time + validTime))
-            .signWith(Keys.hmacShaKeyFor(signingKey), SignatureAlgorithm.HS512)
+            .setExpiration(Date(now.time + this.validTime))
+            .signWith(Keys.hmacShaKeyFor(this.signingKey), SignatureAlgorithm.HS512)
             .compact()
     }
 
     fun getAuthentication(token: String?): Authentication {
-        val id: String = Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(token).body.subject
+        val id: String = Jwts.parserBuilder().setSigningKey(this.signingKey).build().parseClaimsJws(token).body.subject
         return UsernamePasswordAuthenticationToken(id, null, ArrayList())
     }
 
@@ -42,7 +43,24 @@ class JwtTokenProvider(env: Environment) {
     }
 
     fun validateToken(jwtToken: String?, request: HttpServletRequest): Boolean {
-        val claims: Jws<Claims> = Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(jwtToken)
-        return !claims.body.expiration.before(Date())
+        val claims: Jws<Claims> = Jwts.parserBuilder().setSigningKey(this.signingKey).build().parseClaimsJws(jwtToken)
+
+        if (claims.body.expiration.before(Date())) {
+            request.setAttribute("errorCode", ErrorCode.INVALID_JWT)
+            return false
+        }
+
+        return true
+    }
+
+    fun checkAdmin(jwtToken: String?, request: HttpServletRequest): Boolean {
+        val claims: Jws<Claims> = Jwts.parserBuilder().setSigningKey(this.signingKey).build().parseClaimsJws(jwtToken)
+
+        if (claims.body["role"]?.equals(Role.ADMIN.toString()) == false) {
+            request.setAttribute("errorCode", ErrorCode.NOT_ACCESSIBLE)
+            return false
+        }
+
+        return true
     }
 }

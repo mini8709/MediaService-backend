@@ -12,11 +12,11 @@ import javax.servlet.ServletResponse
 import javax.servlet.http.HttpServletRequest
 
 @Component
-class JwtAuthenticationFilter(private val tokenProvider: JwtTokenProvider) : GenericFilterBean() {
+class RoleAuthenticationFilter(private val tokenProvider: JwtTokenProvider) : GenericFilterBean() {
     @Throws(IOException::class, ServletException::class)
     override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
         val token: String? = this.tokenProvider.resolveToken(request as HttpServletRequest)
-        if (token != null && this.tokenProvider.validateToken(token, request)) {
+        if (token != null && this.tokenProvider.checkAdmin(token, request)) {
             val auth: Authentication = this.tokenProvider.getAuthentication(token)
             SecurityContextHolder.getContext().authentication = auth
         }

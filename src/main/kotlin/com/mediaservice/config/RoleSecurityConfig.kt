@@ -3,7 +3,6 @@ package com.mediaservice.config
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.builders.WebSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.config.http.SessionCreationPolicy
@@ -11,9 +10,9 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 
 @Configuration
 @EnableWebSecurity
-@Order(1)
-class SecurityConfig(
-    private val jwtAuthenticationFilter: RoleAuthenticationFilter,
+@Order(2)
+class RoleSecurityConfig(
+    private val roleAuthenticationFilter: RoleAuthenticationFilter,
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint
 ) : WebSecurityConfigurerAdapter() {
 
@@ -28,21 +27,16 @@ class SecurityConfig(
             .and()
             .authorizeRequests()
             .antMatchers(
-                "/api/v1/auth/**"
-            )
-            .permitAll()
-            .anyRequest().authenticated()
+                "/api/v1/actor",
+                "/api/v1/creator",
+                "/api/v1/genre",
+                "/api/v1/media",
+                "/api/v1/media-series"
+            ).authenticated()
             .and()
             .addFilterBefore(
-                this.jwtAuthenticationFilter,
+                this.roleAuthenticationFilter,
                 BasicAuthenticationFilter::class.java
             )
-    }
-
-    override fun configure(web: WebSecurity) {
-        web.ignoring().antMatchers(
-            "/v2/api-docs", "/swagger-resources/**",
-            "/webjars/**", "/swagger/**", "/swagger-ui/**"
-        )
     }
 }
