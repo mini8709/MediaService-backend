@@ -1,6 +1,7 @@
 package com.mediaservice.web
 
 import com.mediaservice.application.UserService
+import com.mediaservice.application.dto.user.PasswordFindRequestDto
 import com.mediaservice.application.dto.user.SignInRequestDto
 import com.mediaservice.application.dto.user.SignUpRequestDto
 import com.mediaservice.application.dto.user.UserResponseDto
@@ -20,5 +21,10 @@ class AuthController(private val userService: UserService) {
     @PostMapping("/sign-in")
     fun signIn(@RequestBody signInRequestDto: SignInRequestDto): String {
         return this.userService.signIn(signInRequestDto)
+    }
+
+    @PostMapping("/password")
+    fun findPassword(@RequestBody passwordFindRequestDto: PasswordFindRequestDto): UserResponseDto {
+        return this.userService.findPassword(passwordFindRequestDto)
     }
 }
