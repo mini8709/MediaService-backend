@@ -25,6 +25,7 @@ class ProfileServiceTest {
     private lateinit var profileId: UUID
     private lateinit var user: User
     private lateinit var profile: Profile
+    private lateinit var profileAlreadyDeleted: Profile
 
     @BeforeEach
     fun setUp() {
@@ -33,6 +34,7 @@ class ProfileServiceTest {
         this.profileId = UUID.randomUUID()
         this.user = User(userId, "test@emai.com", "password", Role.USER)
         this.profile = Profile(profileId, user, "action", "19+", "image_url", false)
+        this.profileAlreadyDeleted = Profile(profileId, user, "action", "19+", "image_url", true)
     }
 
     @Test
@@ -71,5 +73,48 @@ class ProfileServiceTest {
 
         // then
         assertEquals(this.profile.name, signInProfileResponseDto[0].name)
+    }
+
+    @Test
+    fun successDeleteProfile() {
+        // given
+        every {
+            profileRepository.findById(profileId)
+        } returns profile
+        every {
+            profileRepository.delete(profileId)
+        } returns profile
+        // when
+        val profileResponseDto = profileService.deleteProfile(profileId)
+        // then
+        assertEquals(profileResponseDto.isDeleted, false)
+    }
+
+    @Test
+    fun failDeleteProfile_noProfile() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            every {
+                profileRepository.findById(profileId)
+            } returns null
+            // when
+            profileService.deleteProfile(profileId)
+        }
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun failDeleteProfile_alreadyDeleted() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            every {
+                profileRepository.findById(profileId)
+            } returns profileAlreadyDeleted
+            // when
+            profileService.deleteProfile(profileId)
+        }
+        // then
+        assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)
     }
 }

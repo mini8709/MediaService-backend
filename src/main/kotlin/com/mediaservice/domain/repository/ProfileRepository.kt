@@ -18,4 +18,11 @@ class ProfileRepository {
             ProfileTable.isDeleted eq false
         }.map { Profile.from(it) }
     }
+
+    fun delete(id: UUID): Profile? {
+        return ProfileEntity.findById(id)?.let {
+            it.isDeleted = true
+            return Profile.from(it)
+        }
+    }
 }

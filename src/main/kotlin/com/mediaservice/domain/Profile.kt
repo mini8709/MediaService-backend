@@ -24,6 +24,8 @@ class Profile(
     var isDeleted: Boolean
 ) {
     companion object {
+        const val DOMAIN = "PROFILE"
+
         fun from(profileEntity: ProfileEntity) = Profile(
             id = profileEntity.id.value,
             user = User.from(profileEntity.user),

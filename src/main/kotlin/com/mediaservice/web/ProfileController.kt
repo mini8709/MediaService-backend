@@ -3,6 +3,7 @@ package com.mediaservice.web
 import com.mediaservice.application.ProfileService
 import com.mediaservice.application.dto.user.ProfileResponseDto
 import com.mediaservice.application.dto.user.SignInProfileResponseDto
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -20,5 +21,10 @@ class ProfileController(private val profileService: ProfileService) {
     @GetMapping("/sign-in/{id}")
     fun findByUserId(@PathVariable id: UUID): List<SignInProfileResponseDto> {
         return this.profileService.findByUserId(id)
+    }
+
+    @DeleteMapping("/{id}")
+    fun profileDelete(@PathVariable id: UUID): ProfileResponseDto {
+        return this.profileService.deleteProfile(id)
     }
 }
