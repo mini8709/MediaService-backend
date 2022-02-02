@@ -42,4 +42,15 @@ class ProfileRepository {
             return Profile.from(it)
         }
     }
+
+    fun update(profile: Profile): Profile? {
+        return profile.id?.let { uuid ->
+            ProfileEntity.findById(uuid)?.let { profileEntity ->
+                profileEntity.name = profile.name
+                profileEntity.mainImage = profile.mainImage
+                profileEntity.rate = profile.rate
+                return Profile.from(profileEntity)
+            }
+        }
+    }
 }

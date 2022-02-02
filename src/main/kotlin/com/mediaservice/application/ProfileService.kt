@@ -2,6 +2,7 @@ package com.mediaservice.application
 
 import com.mediaservice.application.dto.user.ProfileCreateRequestDto
 import com.mediaservice.application.dto.user.ProfileResponseDto
+import com.mediaservice.application.dto.user.ProfileUpdateRequestDto
 import com.mediaservice.application.dto.user.SignInProfileResponseDto
 import com.mediaservice.application.validator.IsDeletedValidator
 import com.mediaservice.application.validator.ProfileNumberValidator
@@ -72,6 +73,27 @@ class ProfileService(
                 id
             ) ?: throw BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH PROFILE $id"
+            )
+        )
+    }
+
+    @Transactional
+    fun updateProfile(profileId: UUID, profileUpdateRequestDto: ProfileUpdateRequestDto): ProfileResponseDto? {
+
+        val profileForUpdate = this.profileRepository.findById(profileId) ?: throw BadRequestException(
+            ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH PROFILE $profileId"
+        )
+
+        val validator: Validator = IsDeletedValidator(profileForUpdate.isDeleted, Profile.DOMAIN)
+        validator.validate()
+
+        profileForUpdate.updateProfile(profileUpdateRequestDto.name, profileUpdateRequestDto.mainImage, profileUpdateRequestDto.rate)
+
+        return ProfileResponseDto.from(
+            this.profileRepository.update(
+                profileForUpdate
+            ) ?: throw BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH PROFILE $profileId"
             )
         )
     }

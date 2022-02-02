@@ -2,6 +2,7 @@ package com.mediaservice
 
 import com.mediaservice.application.ProfileService
 import com.mediaservice.application.dto.user.ProfileCreateRequestDto
+import com.mediaservice.application.dto.user.ProfileUpdateRequestDto
 import com.mediaservice.application.dto.user.SignInProfileResponseDto
 import com.mediaservice.domain.Profile
 import com.mediaservice.domain.Role
@@ -29,6 +30,8 @@ class ProfileServiceTest {
     private lateinit var profile: Profile
     private lateinit var profileAlreadyDeleted: Profile
     private lateinit var profileCreateRequestDto: ProfileCreateRequestDto
+    private lateinit var profileAfterUpdate: Profile
+    private lateinit var profileUpdateRequestDto: ProfileUpdateRequestDto
 
     @BeforeEach
     fun setUp() {
@@ -38,6 +41,8 @@ class ProfileServiceTest {
         this.user = User(userId, "test@emai.com", "password", Role.USER)
         this.profile = Profile(profileId, user, "action", "19+", "image_url", false)
         this.profileAlreadyDeleted = Profile(profileId, user, "action", "19+", "image_url", true)
+        this.profileAfterUpdate = Profile(profileId, user, "name", "19+", "image_url2", false)
+        this.profileUpdateRequestDto = ProfileUpdateRequestDto("name", "19+", "image_url2")
         this.profileCreateRequestDto = ProfileCreateRequestDto("action", "19+", "image_url")
     }
 
@@ -120,6 +125,37 @@ class ProfileServiceTest {
         }
         // then
         assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)
+    }
+
+    @Test
+    fun successUpdateProfile() {
+        // given
+        every {
+            profileRepository.findById(profileId)
+        } returns profile
+        every {
+            profileRepository.update(any())
+        } returns profileAfterUpdate
+        // when
+        val profileResponseDto = this.profileService.updateProfile(this.profileId, profileUpdateRequestDto)
+        // then
+        if (profileResponseDto != null) {
+            assertEquals(profile.mainImage, profileResponseDto.mainImage)
+        }
+    }
+
+    @Test
+    fun failUpdateProfile_noProfile() {
+        // given
+        val exception = assertThrows(BadRequestException::class.java) {
+            every {
+                profileRepository.findById(profileId)
+            } returns null
+            // when
+            profileService.updateProfile(profileId, profileUpdateRequestDto)
+        }
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
     }
 
     @Test
