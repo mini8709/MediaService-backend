@@ -16,7 +16,7 @@ object ProfileTable : UUIDTable("TB_PROFILE") {
 }
 
 class Profile(
-    var id: UUID,
+    var id: UUID?,
     var user: User,
     var name: String,
     var rate: String,
@@ -33,6 +33,15 @@ class Profile(
             rate = profileEntity.rate,
             mainImage = profileEntity.mainImage,
             isDeleted = profileEntity.isDeleted
+        )
+
+        fun of(user: User, mainImage: String, rate: String, name: String) = Profile(
+            id = null,
+            user = user,
+            name = name,
+            rate = rate,
+            mainImage = mainImage,
+            isDeleted = false
         )
     }
 }

@@ -1,22 +1,20 @@
 package com.mediaservice.application.dto.user
 
 import com.mediaservice.domain.Profile
-import com.mediaservice.domain.User
+import java.util.UUID
 
 data class ProfileResponseDto(
-    val user: User,
+    val profileId: UUID,
     val name: String,
-    val rate: String,
     val mainImage: String,
-    val isDeleted: Boolean
+    val rate: String
 ) {
     companion object {
         fun from(profile: Profile) = ProfileResponseDto(
-            user = profile.user,
-            name = profile.name,
-            rate = profile.rate,
+            profileId = profile.id!!,
             mainImage = profile.mainImage,
-            isDeleted = profile.isDeleted
+            name = profile.name,
+            rate = profile.rate
         )
     }
 }
