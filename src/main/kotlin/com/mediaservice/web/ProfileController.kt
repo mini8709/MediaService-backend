@@ -30,23 +30,27 @@ class ProfileController(private val profileService: ProfileService) {
     }
 
     @PostMapping("/")
-    fun createProfile(
+    fun create(
         @RequestBody profileCreateRequestDto: ProfileCreateRequestDto,
         @AuthenticationPrincipal userId: String
     ): ProfileResponseDto? {
-        return profileService.createProfile(profileCreateRequestDto, UUID.fromString(userId))
+        return profileService.create(profileCreateRequestDto, UUID.fromString(userId))
     }
 
     @DeleteMapping("/{id}")
-    fun profileDelete(@PathVariable id: UUID): ProfileResponseDto {
-        return this.profileService.deleteProfile(id)
+    fun delete(
+        @AuthenticationPrincipal userId: String,
+        @PathVariable id: UUID
+    ): ProfileResponseDto {
+        return this.profileService.delete(UUID.fromString(userId), id)
     }
 
     @PutMapping("/{profileId}")
-    fun updateProfile(
+    fun update(
+        @AuthenticationPrincipal userId: String,
         @PathVariable profileId: UUID,
         @RequestBody profileUpdateRequestDto: ProfileUpdateRequestDto
     ): ProfileResponseDto? {
-        return this.profileService.updateProfile(profileId, profileUpdateRequestDto)
+        return this.profileService.update(UUID.fromString(userId), profileId, profileUpdateRequestDto)
     }
 }

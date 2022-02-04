@@ -2,6 +2,7 @@ package com.mediaservice.web
 
 import com.mediaservice.application.UserService
 import com.mediaservice.application.dto.user.PasswordUpdateRequestDto
+import com.mediaservice.application.dto.user.ProfileResponseDto
 import com.mediaservice.application.dto.user.UserResponseDto
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
@@ -32,5 +33,12 @@ class UserController(private val userService: UserService) {
         @RequestBody passwordUpdateRequestDto: PasswordUpdateRequestDto
     ): UserResponseDto {
         return this.userService.updatePassword(UUID.fromString(id), passwordUpdateRequestDto)
+    }
+
+    @GetMapping("/profiles")
+    fun findProfiles(
+        @AuthenticationPrincipal id: String
+    ): List<ProfileResponseDto> {
+        return this.userService.findProfiles(UUID.fromString(id))
     }
 }

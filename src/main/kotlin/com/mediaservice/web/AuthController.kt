@@ -3,6 +3,7 @@ package com.mediaservice.web
 import com.mediaservice.application.UserService
 import com.mediaservice.application.dto.user.PasswordFindRequestDto
 import com.mediaservice.application.dto.user.SignInRequestDto
+import com.mediaservice.application.dto.user.SignInResponseDto
 import com.mediaservice.application.dto.user.SignUpRequestDto
 import com.mediaservice.application.dto.user.UserResponseDto
 import org.springframework.web.bind.annotation.PostMapping
@@ -19,7 +20,7 @@ class AuthController(private val userService: UserService) {
     }
 
     @PostMapping("/sign-in")
-    fun signIn(@RequestBody signInRequestDto: SignInRequestDto): String {
+    fun signIn(@RequestBody signInRequestDto: SignInRequestDto): SignInResponseDto {
         return this.userService.signIn(signInRequestDto)
     }
 

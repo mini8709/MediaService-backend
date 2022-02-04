@@ -35,7 +35,7 @@ class GenreService(
         val validator: Validator = IsDeletedValidator(genreForUpdate.isDeleted, Genre.DOMAIN)
         validator.validate()
 
-        genreForUpdate.name = genreUpdateRequestDto.name
+        genreForUpdate.update(genreUpdateRequestDto.name)
 
         return GenreResponseDto.from(
             this.genreRepository.update(

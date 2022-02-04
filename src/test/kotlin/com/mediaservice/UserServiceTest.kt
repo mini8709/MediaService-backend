@@ -6,14 +6,16 @@ import com.mediaservice.application.dto.user.PasswordUpdateRequestDto
 import com.mediaservice.application.dto.user.SignInRequestDto
 import com.mediaservice.application.dto.user.SignUpRequestDto
 import com.mediaservice.application.dto.user.UserResponseDto
-import com.mediaservice.application.infrastructure.GoogleMailSender
 import com.mediaservice.config.JwtTokenProvider
+import com.mediaservice.domain.Profile
 import com.mediaservice.domain.Role
 import com.mediaservice.domain.User
+import com.mediaservice.domain.repository.ProfileRepository
 import com.mediaservice.domain.repository.UserRepository
 import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.ErrorCode
 import com.mediaservice.exception.ServerUnavailableException
+import com.mediaservice.infrastructure.GoogleMailSender
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -29,12 +31,21 @@ import kotlin.test.assertEquals
 
 class UserServiceTest {
     private var userRepository = mockk<UserRepository>()
+    private var profileRepository = mockk<ProfileRepository>()
     private var tokenProvider = mockk<JwtTokenProvider>()
     private val mailSender = mockk<GoogleMailSender>()
-    private var userService: UserService = UserService(this.userRepository, this.tokenProvider, this.mailSender)
+    private var userService: UserService = UserService(
+        this.userRepository,
+        this.profileRepository,
+        this.tokenProvider,
+        this.mailSender
+    )
+
     private lateinit var user: User
+    private lateinit var profile: Profile
     private lateinit var pwUpdatedUser: User
     private lateinit var id: UUID
+    private lateinit var profileId: UUID
     private lateinit var email: String
     private lateinit var prop: Properties
     private lateinit var session: Session
@@ -44,8 +55,10 @@ class UserServiceTest {
     fun setup() {
         clearAllMocks()
         this.id = UUID.randomUUID()
+        this.profileId = UUID.randomUUID()
         this.email = "test@gmail.com"
         this.user = User(id, email, "1234", Role.USER)
+        this.profile = Profile(profileId, user, "action", "19+", "image_url", false)
         this.pwUpdatedUser = User(id, email, "test123!!", Role.USER)
         this.prop = Properties()
         this.session = Session.getDefaultInstance(prop)
@@ -130,12 +143,13 @@ class UserServiceTest {
 
         every { userRepository.findByEmail(signInRequestDto.email) } returns this.user
         every { tokenProvider.createToken(user.id!!, user.role) } returns "valid token"
+        every { profileRepository.findByUserId(id) } returns listOf(this.profile)
 
         // when
-        val token = this.userService.signIn(signInRequestDto)
+        val signInResponseDto = this.userService.signIn(signInRequestDto)
 
         // then
-        assertEquals(token, "valid token")
+        assertEquals(signInResponseDto.accessToken, "valid token")
     }
 
     @Test
@@ -301,5 +315,31 @@ class UserServiceTest {
         }
         // then
         assertEquals(ErrorCode.UNAVAILABLE_MAIL_SERVER, exception.errorCode)
+    }
+
+    @Test
+    fun successFindProfiles() {
+        // given
+        every { userRepository.findById(id) } returns this.user
+        every { profileRepository.findByUserId(id) } returns listOf(this.profile)
+
+        // when
+        val profileResponseDto = userService.findProfiles(id)
+
+        // then
+        assertEquals(profileResponseDto[0].name, "action")
+    }
+
+    @Test
+    fun failFindProfiles_CannotFindUser() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            every { userRepository.findById(id) } returns null
+
+            // when
+            this.userService.findProfiles(id)
+        }
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
     }
 }

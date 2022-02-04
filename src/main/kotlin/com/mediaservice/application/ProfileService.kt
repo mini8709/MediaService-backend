@@ -6,6 +6,7 @@ import com.mediaservice.application.dto.user.ProfileUpdateRequestDto
 import com.mediaservice.application.dto.user.SignInProfileResponseDto
 import com.mediaservice.application.validator.IsDeletedValidator
 import com.mediaservice.application.validator.ProfileNumberValidator
+import com.mediaservice.application.validator.UserEqualValidator
 import com.mediaservice.application.validator.Validator
 import com.mediaservice.domain.Profile
 import com.mediaservice.domain.repository.ProfileRepository
@@ -21,7 +22,6 @@ class ProfileService(
     private val profileRepository: ProfileRepository,
     private val userRepository: UserRepository
 ) {
-
     @Transactional(readOnly = true)
     fun findById(id: UUID): ProfileResponseDto {
         return ProfileResponseDto.from(
@@ -37,8 +37,10 @@ class ProfileService(
     }
 
     @Transactional
-    fun createProfile(profileCreateRequestDto: ProfileCreateRequestDto, userId: UUID): ProfileResponseDto {
-
+    fun create(
+        profileCreateRequestDto: ProfileCreateRequestDto,
+        userId: UUID
+    ): ProfileResponseDto {
         val user = userRepository.findById(userId)
             ?: throw BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH USER $userId")
 
@@ -60,12 +62,19 @@ class ProfileService(
     }
 
     @Transactional
-    fun deleteProfile(id: UUID): ProfileResponseDto {
-        val profileForUpdate = this.profileRepository.findById(id) ?: throw BadRequestException(
+    fun delete(
+        userId: UUID,
+        id: UUID
+    ): ProfileResponseDto {
+        val user = userRepository.findById(userId)
+            ?: throw BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH USER $userId")
+
+        val profileForDelete = this.profileRepository.findById(id) ?: throw BadRequestException(
             ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH PROFILE $id"
         )
 
-        val validator = IsDeletedValidator(profileForUpdate.isDeleted, Profile.DOMAIN)
+        val validator = IsDeletedValidator(profileForDelete.isDeleted, Profile.DOMAIN)
+        validator.linkWith(UserEqualValidator(user.id!!, profileForDelete.user.id!!))
         validator.validate()
 
         return ProfileResponseDto.from(
@@ -78,16 +87,23 @@ class ProfileService(
     }
 
     @Transactional
-    fun updateProfile(profileId: UUID, profileUpdateRequestDto: ProfileUpdateRequestDto): ProfileResponseDto? {
+    fun update(
+        userId: UUID,
+        profileId: UUID,
+        profileUpdateRequestDto: ProfileUpdateRequestDto
+    ): ProfileResponseDto? {
+        val user = userRepository.findById(userId)
+            ?: throw BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH USER $userId")
 
         val profileForUpdate = this.profileRepository.findById(profileId) ?: throw BadRequestException(
             ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH PROFILE $profileId"
         )
 
         val validator: Validator = IsDeletedValidator(profileForUpdate.isDeleted, Profile.DOMAIN)
+        validator.linkWith(UserEqualValidator(user.id!!, profileForUpdate.user.id!!))
         validator.validate()
 
-        profileForUpdate.updateProfile(profileUpdateRequestDto.name, profileUpdateRequestDto.mainImage, profileUpdateRequestDto.rate)
+        profileForUpdate.update(profileUpdateRequestDto.name, profileUpdateRequestDto.mainImage, profileUpdateRequestDto.rate)
 
         return ProfileResponseDto.from(
             this.profileRepository.update(

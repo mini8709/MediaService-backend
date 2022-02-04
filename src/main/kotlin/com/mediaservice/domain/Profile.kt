@@ -45,7 +45,7 @@ class Profile(
         )
     }
 
-    fun updateProfile(name: String, mainImage: String, rate: String) {
+    fun update(name: String, mainImage: String, rate: String) {
         this.name = name
         this.mainImage = mainImage
         this.rate = rate

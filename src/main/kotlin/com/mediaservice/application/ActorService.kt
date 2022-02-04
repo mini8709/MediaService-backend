@@ -35,7 +35,7 @@ class ActorService(
         val validator: Validator = IsDeletedValidator(actorForUpdate.isDeleted, Actor.DOMAIN)
         validator.validate()
 
-        actorForUpdate.name = actorUpdateRequestDto.name
+        actorForUpdate.update(actorUpdateRequestDto.name)
 
         return ActorResponseDto.from(
             this.actorRepository.update(

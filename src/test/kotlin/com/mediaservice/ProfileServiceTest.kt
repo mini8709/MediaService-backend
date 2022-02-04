@@ -11,6 +11,7 @@ import com.mediaservice.domain.repository.ProfileRepository
 import com.mediaservice.domain.repository.UserRepository
 import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.ErrorCode
+import com.mediaservice.exception.UnauthorizedException
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -88,15 +89,35 @@ class ProfileServiceTest {
     fun successDeleteProfile() {
         // given
         every {
+            userRepository.findById(userId)
+        } returns user
+        every {
             profileRepository.findById(profileId)
         } returns profile
         every {
             profileRepository.delete(profileId)
         } returns profile
         // when
-        val profileResponseDto = profileService.deleteProfile(profileId)
+        val profileResponseDto = profileService.delete(userId, profileId)
         // then
-        assertEquals(profileResponseDto.profileId, profileId)
+        assertEquals(profileResponseDto.id, profileId)
+    }
+
+    @Test
+    fun failDeleteProfile_noUser() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            every {
+                userRepository.findById(userId)
+            } returns null
+            every {
+                profileRepository.findById(profileId)
+            } returns profile
+            // when
+            profileService.delete(userId, profileId)
+        }
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
     }
 
     @Test
@@ -104,13 +125,35 @@ class ProfileServiceTest {
         val exception = assertThrows(BadRequestException::class.java) {
             // given
             every {
+                userRepository.findById(userId)
+            } returns user
+            every {
                 profileRepository.findById(profileId)
             } returns null
             // when
-            profileService.deleteProfile(profileId)
+            profileService.delete(userId, profileId)
         }
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun failDeleteProfile_noPermission() {
+        val user2Id = UUID.randomUUID()
+        val user2 = User(user2Id, "test@emai.com", "password", Role.USER)
+        val exception = assertThrows(UnauthorizedException::class.java) {
+            // given
+            every {
+                userRepository.findById(user2Id)
+            } returns user2
+            every {
+                profileRepository.findById(profileId)
+            } returns profile
+            // when
+            profileService.delete(user2Id, profileId)
+        }
+        // then
+        assertEquals(ErrorCode.NOT_ACCESSIBLE, exception.errorCode)
     }
 
     @Test
@@ -118,10 +161,13 @@ class ProfileServiceTest {
         val exception = assertThrows(BadRequestException::class.java) {
             // given
             every {
+                userRepository.findById(userId)
+            } returns user
+            every {
                 profileRepository.findById(profileId)
             } returns profileAlreadyDeleted
             // when
-            profileService.deleteProfile(profileId)
+            profileService.delete(userId, profileId)
         }
         // then
         assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)
@@ -131,13 +177,16 @@ class ProfileServiceTest {
     fun successUpdateProfile() {
         // given
         every {
+            userRepository.findById(userId)
+        } returns user
+        every {
             profileRepository.findById(profileId)
         } returns profile
         every {
             profileRepository.update(any())
         } returns profileAfterUpdate
         // when
-        val profileResponseDto = this.profileService.updateProfile(this.profileId, profileUpdateRequestDto)
+        val profileResponseDto = this.profileService.update(this.userId, this.profileId, profileUpdateRequestDto)
         // then
         if (profileResponseDto != null) {
             assertEquals(profile.mainImage, profileResponseDto.mainImage)
@@ -145,17 +194,73 @@ class ProfileServiceTest {
     }
 
     @Test
+    fun failUpdateProfile_noUser() {
+        // given
+        val exception = assertThrows(BadRequestException::class.java) {
+            every {
+                userRepository.findById(userId)
+            } returns null
+            every {
+                profileRepository.findById(profileId)
+            } returns profile
+            // when
+            profileService.update(userId, profileId, profileUpdateRequestDto)
+        }
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
     fun failUpdateProfile_noProfile() {
         // given
         val exception = assertThrows(BadRequestException::class.java) {
             every {
+                userRepository.findById(userId)
+            } returns user
+            every {
                 profileRepository.findById(profileId)
             } returns null
             // when
-            profileService.updateProfile(profileId, profileUpdateRequestDto)
+            profileService.update(userId, profileId, profileUpdateRequestDto)
         }
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun failUpdateProfile_noPermission() {
+        val user2Id = UUID.randomUUID()
+        val user2 = User(user2Id, "test@emai.com", "password", Role.USER)
+        val exception = assertThrows(UnauthorizedException::class.java) {
+            // given
+            every {
+                userRepository.findById(user2Id)
+            } returns user2
+            every {
+                profileRepository.findById(profileId)
+            } returns profile
+            // when
+            profileService.update(user2Id, profileId, profileUpdateRequestDto)
+        }
+        // then
+        assertEquals(ErrorCode.NOT_ACCESSIBLE, exception.errorCode)
+    }
+
+    @Test
+    fun failUpdateProfile_alreadyDeleted() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            every {
+                userRepository.findById(userId)
+            } returns user
+            every {
+                profileRepository.findById(profileId)
+            } returns profileAlreadyDeleted
+            // when
+            profileService.update(userId, profileId, profileUpdateRequestDto)
+        }
+        // then
+        assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)
     }
 
     @Test
@@ -172,7 +277,7 @@ class ProfileServiceTest {
         } returns user
 
         // when
-        val profileResponseDto = profileService.createProfile(profileCreateRequestDto, userId)
+        val profileResponseDto = profileService.create(profileCreateRequestDto, userId)
 
         // then
         assertEquals(profileCreateRequestDto.mainImage, profileResponseDto.mainImage)
@@ -189,7 +294,7 @@ class ProfileServiceTest {
                 profileRepository.countByUserId(userId)
             } returns 5
             // when
-            profileService.createProfile(profileCreateRequestDto, userId)
+            profileService.create(profileCreateRequestDto, userId)
         }
         // then
         assertEquals(ErrorCode.NO_MORE_ITEM, exception.errorCode)
@@ -203,7 +308,7 @@ class ProfileServiceTest {
                 userRepository.findById(any())
             } returns null
             // when
-            profileService.createProfile(profileCreateRequestDto, userId)
+            profileService.create(profileCreateRequestDto, userId)
         }
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)

@@ -7,9 +7,9 @@ enum class ErrorCode(val code: Int) {
     ROW_DOES_NOT_EXIST(40000),
     ROW_ALREADY_EXIST(40001),
     INVALID_FORMAT(40002),
-    INVALID_PERMISSION(40003),
-    ROW_ALREADY_DELETED(40004),
-    NO_MORE_ITEM(40005),
+    ROW_ALREADY_DELETED(40003),
+    NO_MORE_ITEM(40004),
+
     /**
      *  401 Unauthorized Error
      */

@@ -28,6 +28,10 @@ class Actor(var id: UUID?, var name: String, var isDeleted: Boolean) {
             isDeleted = false
         )
     }
+
+    fun update(name: String) {
+        this.name = name
+    }
 }
 
 class ActorEntity(id: EntityID<UUID>) : UUIDEntity(id) {

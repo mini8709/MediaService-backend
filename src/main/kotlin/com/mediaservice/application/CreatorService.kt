@@ -34,7 +34,7 @@ class CreatorService(
         val validator: Validator = IsDeletedValidator(creatorForUpdate.isDeleted, Creator.DOMAIN)
         validator.validate()
 
-        creatorForUpdate.name = creatorCreateRequestDto.name
+        creatorForUpdate.update(creatorCreateRequestDto.name)
 
         return CreatorResponseDto.from(
             this.creatorRepository.update(

@@ -6,6 +6,7 @@ import com.mediaservice.exception.DataNotFoundException
 import com.mediaservice.exception.ErrorCode
 import com.mediaservice.exception.InternalServerException
 import com.mediaservice.exception.ServerUnavailableException
+import com.mediaservice.exception.UnauthorizedException
 import org.springframework.validation.BindingResult
 import org.springframework.validation.FieldError
 import org.springframework.web.HttpRequestMethodNotSupportedException
@@ -28,6 +29,11 @@ class GlobalControllerAdvice {
 
     @ExceptionHandler(value = [BadRequestException::class])
     fun badRequestException(e: BadRequestException): ExceptionDto {
+        return ExceptionDto(e.errorCode, e.message)
+    }
+
+    @ExceptionHandler(value = [UnauthorizedException::class])
+    fun badRequestException(e: UnauthorizedException): ExceptionDto {
         return ExceptionDto(e.errorCode, e.message)
     }
 

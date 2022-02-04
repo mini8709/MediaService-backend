@@ -28,6 +28,10 @@ class Creator(var id: UUID?, var name: String, var isDeleted: Boolean) {
             isDeleted = false
         )
     }
+
+    fun update(name: String) {
+        this.name = name
+    }
 }
 
 class CreatorEntity(id: EntityID<UUID>) : UUIDEntity(id) {
