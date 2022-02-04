@@ -112,6 +112,18 @@ class UserServiceTest {
     }
 
     @Test
+    fun successIsDuplicatedByEmail() {
+        // given
+        every { userRepository.findByEmail(email) } returns null
+
+        // when
+        val isDuplicated = this.userService.isDuplicatedByEmail(email)
+
+        // then
+        assertEquals(isDuplicated, false)
+    }
+
+    @Test
     fun successSignIn() {
         // given
         val signInRequestDto = SignInRequestDto("test@gmail.com", "1234")

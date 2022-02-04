@@ -34,9 +34,16 @@ class UserService(
         )
     }
 
+    @Transactional(readOnly = true)
+    fun isDuplicatedByEmail(email: String): Boolean {
+        return this.userRepository.findByEmail(email)?.let {
+            true
+        } ?: false
+    }
+
     @Transactional
     fun signUp(signUpRequestDto: SignUpRequestDto): UserResponseDto {
-        if (this.userRepository.findByEmail(signUpRequestDto.email) != null) {
+        this.userRepository.findByEmail(signUpRequestDto.email)?.let {
             throw BadRequestException(ErrorCode.ROW_ALREADY_EXIST, "DUPLICATE EMAIL")
         }
 
