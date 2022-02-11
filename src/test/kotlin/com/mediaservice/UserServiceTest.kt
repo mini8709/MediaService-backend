@@ -8,9 +8,11 @@ import com.mediaservice.application.dto.user.SignUpRequestDto
 import com.mediaservice.application.dto.user.UserResponseDto
 import com.mediaservice.config.JwtTokenProvider
 import com.mediaservice.domain.Profile
+import com.mediaservice.domain.RefreshToken
 import com.mediaservice.domain.Role
 import com.mediaservice.domain.User
 import com.mediaservice.domain.repository.ProfileRepository
+import com.mediaservice.domain.repository.RefreshTokenRepository
 import com.mediaservice.domain.repository.UserRepository
 import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.ErrorCode
@@ -33,10 +35,12 @@ class UserServiceTest {
     private var userRepository = mockk<UserRepository>()
     private var profileRepository = mockk<ProfileRepository>()
     private var tokenProvider = mockk<JwtTokenProvider>()
+    private var refreshTokenRepository = mockk<RefreshTokenRepository>()
     private val mailSender = mockk<GoogleMailSender>()
     private var userService: UserService = UserService(
         this.userRepository,
         this.profileRepository,
+        this.refreshTokenRepository,
         this.tokenProvider,
         this.mailSender
     )
@@ -50,6 +54,7 @@ class UserServiceTest {
     private lateinit var prop: Properties
     private lateinit var session: Session
     private lateinit var message: MimeMessage
+    private lateinit var refreshToken: RefreshToken
 
     @BeforeEach
     fun setup() {
@@ -63,6 +68,7 @@ class UserServiceTest {
         this.prop = Properties()
         this.session = Session.getDefaultInstance(prop)
         this.message = MimeMessage(session)
+        this.refreshToken = RefreshToken("refresh_token")
     }
 
     @Test
@@ -142,7 +148,9 @@ class UserServiceTest {
         val signInRequestDto = SignInRequestDto("test@gmail.com", "1234")
 
         every { userRepository.findByEmail(signInRequestDto.email) } returns this.user
-        every { tokenProvider.createToken(user.id!!, user.role) } returns "valid token"
+        every { tokenProvider.createAccessToken(user.id!!, user.role) } returns "valid token"
+        every { tokenProvider.createRefreshToken() } returns this.refreshToken
+        every { refreshTokenRepository.save(refreshToken) } returns this.refreshToken
         every { profileRepository.findByUserId(id) } returns listOf(this.profile)
 
         // when

@@ -14,6 +14,7 @@ import com.mediaservice.config.JwtTokenProvider
 import com.mediaservice.domain.Role
 import com.mediaservice.domain.User
 import com.mediaservice.domain.repository.ProfileRepository
+import com.mediaservice.domain.repository.RefreshTokenRepository
 import com.mediaservice.domain.repository.UserRepository
 import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.ErrorCode
@@ -26,6 +27,7 @@ import java.util.UUID
 class UserService(
     private val userRepository: UserRepository,
     private val profileRepository: ProfileRepository,
+    private val refreshTokenRepository: RefreshTokenRepository,
     private val tokenProvider: JwtTokenProvider,
     private val mailSender: GoogleMailSender
 ) {
@@ -62,7 +64,7 @@ class UserService(
         )
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     fun signIn(signInRequestDto: SignInRequestDto): SignInResponseDto {
         val userForLogin = this.userRepository.findByEmail(signInRequestDto.email)
             ?: throw BadRequestException(ErrorCode.INVALID_SIGN_IN, "WRONG EMAIL ${signInRequestDto.email}")
@@ -72,7 +74,8 @@ class UserService(
         validator.validate()
 
         return SignInResponseDto.from(
-            this.tokenProvider.createToken(userForLogin.id!!, userForLogin.role),
+            this.tokenProvider.createAccessToken(userForLogin.id!!, userForLogin.role),
+            this.refreshTokenRepository.save(this.tokenProvider.createRefreshToken()),
             this.profileRepository.findByUserId(userForLogin.id).map { ProfileResponseDto.from(it) }
         )
     }

@@ -21,4 +21,5 @@ spring:
     import: classpath:email-config.yml
 
 JWT:
-  secret: media_service_secret_authorization_jwt_token_media_service_secret_authorization_jwt_token
+  access_secret: media_service_secret_authorization_jwt_token_media_service_secret_authorization_jwt_token
+  refresh_secret: media_service_secret_authorization_refresh_token_media_service_secret_authorization_refresh_token

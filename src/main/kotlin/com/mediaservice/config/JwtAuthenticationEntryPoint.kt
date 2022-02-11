@@ -20,7 +20,7 @@ class JwtAuthenticationEntryPoint : AuthenticationEntryPoint {
         val errorCode = request?.getAttribute("errorCode")
 
         if (errorCode == ErrorCode.INVALID_JWT) {
-            this.setResponse(response!!, ErrorCode.INVALID_JWT, "Try sign in again")
+            this.setResponse(response!!, ErrorCode.INVALID_JWT, "Sign in again")
             return
         }
 

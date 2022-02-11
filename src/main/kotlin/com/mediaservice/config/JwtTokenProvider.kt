@@ -1,9 +1,10 @@
 package com.mediaservice.config
 
+import com.mediaservice.domain.RefreshToken
 import com.mediaservice.domain.Role
+import com.mediaservice.domain.repository.RefreshTokenRepository
 import com.mediaservice.exception.ErrorCode
-import io.jsonwebtoken.Claims
-import io.jsonwebtoken.Jws
+import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
@@ -14,13 +15,16 @@ import org.springframework.stereotype.Component
 import java.util.Date
 import java.util.UUID
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 @Component
-class JwtTokenProvider(env: Environment) {
-    val signingKey = env.getProperty("JWT.secret")?.toByteArray()
-    val validTime = 1000L * 60 * 60 * 24 * 7
+class JwtTokenProvider(env: Environment, refreshTokenRepository: RefreshTokenRepository) {
+    val accessKey = env.getProperty("JWT.access_secret")?.toByteArray()
+    val refreshKey = env.getProperty("JWT.refresh_secret")?.toByteArray()
+    val accessValidTime = 10
+    val refreshValidTime = 1000L * 60 * 60 * 24 * 7
 
-    fun createToken(ID: UUID, role: Role): String {
+    fun createAccessToken(ID: UUID, role: Role): String {
         val now = Date()
         val claims = Jwts.claims().setSubject(ID.toString())
         claims.put("role", role)
@@ -28,35 +32,94 @@ class JwtTokenProvider(env: Environment) {
         return Jwts.builder()
             .setClaims(claims)
             .setIssuedAt(now)
-            .setExpiration(Date(now.time + this.validTime))
-            .signWith(Keys.hmacShaKeyFor(this.signingKey), SignatureAlgorithm.HS512)
+            .setExpiration(Date(now.time + this.accessValidTime))
+            .signWith(Keys.hmacShaKeyFor(this.accessKey), SignatureAlgorithm.HS512)
             .compact()
     }
 
-    fun getAuthentication(token: String?): Authentication {
-        val id: String = Jwts.parserBuilder().setSigningKey(this.signingKey).build().parseClaimsJws(token).body.subject
+    fun createRefreshToken(): RefreshToken {
+        val now = Date()
+
+        return RefreshToken(
+            Jwts.builder()
+                .setIssuedAt(now)
+                .setExpiration(Date(now.time + this.refreshValidTime))
+                .signWith(Keys.hmacShaKeyFor(this.refreshKey), SignatureAlgorithm.HS512)
+                .compact()
+        )
+    }
+
+    fun getAuthentication(token: String?, request: HttpServletRequest): Authentication {
+        val id = try {
+            Jwts.parserBuilder().setSigningKey(this.accessKey).build().parseClaimsJws(token).body.subject
+        } catch (e: ExpiredJwtException) {
+            e.claims.subject
+        }
         return UsernamePasswordAuthenticationToken(id, null, ArrayList())
     }
 
-    fun resolveToken(request: HttpServletRequest): String? {
-        return request.getHeader("Authorization")?.replace("Bearer ", "")
+    fun resolveAccessToken(request: HttpServletRequest): String? {
+        return request.getHeader("access_token")?.replace("Bearer ", "")
     }
 
-    fun validateToken(jwtToken: String?, request: HttpServletRequest): Boolean {
-        val claims: Jws<Claims> = Jwts.parserBuilder().setSigningKey(this.signingKey).build().parseClaimsJws(jwtToken)
+    fun resolveRefreshToken(request: HttpServletRequest): String? {
+        return request.getHeader("refresh_token")?.replace("Bearer ", "")
+    }
 
-        if (claims.body.expiration.before(Date())) {
+    fun validateToken(
+        accessToken: String?,
+        refreshToken: String?,
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        refreshTokenRepository: RefreshTokenRepository
+    ): Boolean {
+        val accessClaims = try {
+            Jwts.parserBuilder().setSigningKey(this.accessKey).build().parseClaimsJws(accessToken).body
+        } catch (e: ExpiredJwtException) {
+            e.claims
+        } catch (e: Exception) {
             request.setAttribute("errorCode", ErrorCode.INVALID_JWT)
             return false
+        }
+
+        if (accessClaims.expiration.before(Date())) {
+            try {
+                Jwts.parserBuilder()
+                    .setSigningKey(this.refreshKey)
+                    .build()
+                    .parseClaimsJws(refreshToken)
+            } catch (e: Exception) {
+                request.setAttribute("errorCode", ErrorCode.INVALID_JWT)
+                return false
+            }
+
+            if (refreshTokenRepository.findById(refreshToken!!).isPresent) {
+                response.setHeader(
+                    "access_token",
+                    this.createAccessToken(
+                        UUID.fromString(
+                            accessClaims.subject
+                        ),
+                        Role.valueOf(accessClaims["role"] as String)
+                    )
+                )
+            } else {
+                request.setAttribute("errorCode", ErrorCode.INVALID_JWT)
+                return false
+            }
         }
 
         return true
     }
 
     fun checkAdmin(jwtToken: String?, request: HttpServletRequest): Boolean {
-        val claims: Jws<Claims> = Jwts.parserBuilder().setSigningKey(this.signingKey).build().parseClaimsJws(jwtToken)
+        val claims = try {
+            Jwts.parserBuilder().setSigningKey(this.accessKey).build().parseClaimsJws(jwtToken).body
+        } catch (e: ExpiredJwtException) {
+            e.claims
+        }
 
-        if (claims.body["role"]?.equals(Role.ADMIN.toString()) == false) {
+        if (claims["role"]?.equals(Role.ADMIN.toString()) == false) {
             request.setAttribute("errorCode", ErrorCode.NOT_ACCESSIBLE)
             return false
         }

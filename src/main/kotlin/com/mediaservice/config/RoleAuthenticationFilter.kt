@@ -15,9 +15,9 @@ import javax.servlet.http.HttpServletRequest
 class RoleAuthenticationFilter(private val tokenProvider: JwtTokenProvider) : GenericFilterBean() {
     @Throws(IOException::class, ServletException::class)
     override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
-        val token: String? = this.tokenProvider.resolveToken(request as HttpServletRequest)
+        val token: String? = this.tokenProvider.resolveAccessToken(request as HttpServletRequest)
         if (token != null && this.tokenProvider.checkAdmin(token, request)) {
-            val auth: Authentication = this.tokenProvider.getAuthentication(token)
+            val auth: Authentication = this.tokenProvider.getAuthentication(token, request)
             SecurityContextHolder.getContext().authentication = auth
         }
         chain.doFilter(request, response)
