@@ -144,4 +144,28 @@ class ProfileService(
             this.likeRepository.save(Like.of(profile, mediaAllSeries))
         )
     }
+
+    @Transactional
+    fun deleteLike(
+        likeRequestDto: LikeRequestDto
+    ): LikeResponseDto {
+        val profile = this.profileRepository.findById(likeRequestDto.profileId)
+            ?: throw BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                "NO SUCH PROFILE ${likeRequestDto.profileId}"
+            )
+
+        val mediaAllSeries = this.mediaAllSeriesRepository.findById(likeRequestDto.mediaAllSeriesId)
+            ?: throw BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                "NO SUCH MEDIA ALL SERIES ${likeRequestDto.mediaAllSeriesId}"
+            )
+
+        val validator: Validator = IsDeletedValidator(profile.isDeleted, Profile.DOMAIN)
+        validator.validate()
+
+        return LikeResponseDto.from(
+            this.likeRepository.delete(Like.of(profile, mediaAllSeries))
+        )
+    }
 }

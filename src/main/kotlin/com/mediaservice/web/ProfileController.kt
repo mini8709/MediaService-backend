@@ -60,4 +60,9 @@ class ProfileController(private val profileService: ProfileService) {
     fun createLike(@RequestBody likeRequestDto: LikeRequestDto): LikeResponseDto {
         return this.profileService.createLike(likeRequestDto)
     }
+
+    @DeleteMapping("/like")
+    fun deleteLike(@RequestBody likeRequestDto: LikeRequestDto): LikeResponseDto {
+        return this.profileService.deleteLike(likeRequestDto)
+    }
 }
