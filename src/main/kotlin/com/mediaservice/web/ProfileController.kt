@@ -1,6 +1,8 @@
 package com.mediaservice.web
 
 import com.mediaservice.application.ProfileService
+import com.mediaservice.application.dto.user.LikeRequestDto
+import com.mediaservice.application.dto.user.LikeResponseDto
 import com.mediaservice.application.dto.user.ProfileCreateRequestDto
 import com.mediaservice.application.dto.user.ProfileResponseDto
 import com.mediaservice.application.dto.user.ProfileUpdateRequestDto
@@ -52,5 +54,10 @@ class ProfileController(private val profileService: ProfileService) {
         @RequestBody profileUpdateRequestDto: ProfileUpdateRequestDto
     ): ProfileResponseDto? {
         return this.profileService.update(UUID.fromString(userId), profileId, profileUpdateRequestDto)
+    }
+
+    @PostMapping("/like")
+    fun createLike(@RequestBody likeRequestDto: LikeRequestDto): LikeResponseDto {
+        return this.profileService.createLike(likeRequestDto)
     }
 }

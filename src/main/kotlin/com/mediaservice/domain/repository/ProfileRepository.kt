@@ -3,6 +3,7 @@ package com.mediaservice.domain.repository
 import com.mediaservice.domain.Profile
 import com.mediaservice.domain.ProfileEntity
 import com.mediaservice.domain.ProfileTable
+import org.jetbrains.exposed.sql.and
 import org.springframework.stereotype.Repository
 import java.util.UUID
 
@@ -14,15 +15,13 @@ class ProfileRepository {
 
     fun findByUserId(id: UUID): List<Profile> {
         return ProfileEntity.find {
-            ProfileTable.user_id eq id
-            ProfileTable.isDeleted eq false
+            ProfileTable.user_id eq id and (ProfileTable.isDeleted eq false)
         }.map { Profile.from(it) }
     }
 
     fun countByUserId(id: UUID): Long {
         return ProfileEntity.find {
-            ProfileTable.user_id eq id
-            ProfileTable.isDeleted eq false
+            ProfileTable.user_id eq id and (ProfileTable.isDeleted eq false)
         }.count()
     }
 
