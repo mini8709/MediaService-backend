@@ -404,4 +404,76 @@ class ProfileServiceTest {
         // then
         assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)
     }
+
+    @Test
+    fun successDeleteLike() {
+        // given
+        val likeRequestDto = LikeRequestDto(profileId, mediaAllSeriesId)
+        every {
+            profileRepository.findById(profileId)
+        } returns profile
+        every {
+            mediaAllSeriesRepository.findById(mediaAllSeriesId)
+        } returns mediaAllSeries
+        every {
+            likeRepository.delete(any())
+        } returns like
+
+        // when
+        val likeResponseDto: LikeResponseDto = profileService.deleteLike(likeRequestDto)
+
+        // then
+        assertEquals(likeRequestDto.mediaAllSeriesId, likeResponseDto.mediaAllSeriesId)
+    }
+
+    @Test
+    fun failDeleteLike_noProfile() {
+        // given
+        val exception = assertThrows(BadRequestException::class.java) {
+            val likeRequestDto = LikeRequestDto(profileId, mediaAllSeriesId)
+            every {
+                profileRepository.findById(any())
+            } returns null
+            // when
+            val likeResponseDto: LikeResponseDto = profileService.deleteLike(likeRequestDto)
+        }
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun failDeleteLike_noMediaAllSeries() {
+        // given
+        val exception = assertThrows(BadRequestException::class.java) {
+            val likeRequestDto = LikeRequestDto(profileId, mediaAllSeriesId)
+            every {
+                profileRepository.findById(profileId)
+            } returns profile
+            every {
+                mediaAllSeriesRepository.findById(mediaAllSeriesId)
+            } returns null
+            // when
+            val likeResponseDto: LikeResponseDto = profileService.deleteLike(likeRequestDto)
+        }
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun failDeleteLike_profileDeleted() {
+        // given
+        val exception = assertThrows(BadRequestException::class.java) {
+            val likeRequestDto = LikeRequestDto(profileId, mediaAllSeriesId)
+            every {
+                profileRepository.findById(profileId)
+            } returns profileAlreadyDeleted
+            every {
+                mediaAllSeriesRepository.findById(mediaAllSeriesId)
+            } returns mediaAllSeries
+            // when
+            val likeResponseDto: LikeResponseDto = profileService.deleteLike(likeRequestDto)
+        }
+        // then
+        assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)
+    }
 }
