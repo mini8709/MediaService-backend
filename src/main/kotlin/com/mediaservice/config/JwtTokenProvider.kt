@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletResponse
 class JwtTokenProvider(env: Environment, private val refreshTokenRepository: RefreshTokenRepository) {
     val accessKey = env.getProperty("JWT.access_secret")?.toByteArray()
     val refreshKey = env.getProperty("JWT.refresh_secret")?.toByteArray()
-    val accessValidTime = 10
+    val accessValidTime = 86400000
     val refreshValidTime = 1000L * 60 * 60 * 24 * 7
 
     fun createAccessToken(ID: UUID, role: Role): String {

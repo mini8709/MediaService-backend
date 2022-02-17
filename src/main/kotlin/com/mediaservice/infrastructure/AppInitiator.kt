@@ -3,6 +3,7 @@ package com.mediaservice.infrastructure
 import com.mediaservice.domain.ActorTable
 import com.mediaservice.domain.CreatorTable
 import com.mediaservice.domain.GenreTable
+import com.mediaservice.domain.LikeTable
 import com.mediaservice.domain.MediaAllSeriesActorTable
 import com.mediaservice.domain.MediaAllSeriesCreatorTable
 import com.mediaservice.domain.MediaAllSeriesGenreTable
@@ -26,12 +27,12 @@ class AppInitiator {
                 SchemaUtils.drop(
                     UserTable, ProfileTable, MediaTable, MediaSeriesTable, MediaAllSeriesTable,
                     ActorTable, CreatorTable, GenreTable, MediaAllSeriesActorTable, MediaAllSeriesGenreTable,
-                    MediaAllSeriesCreatorTable
+                    MediaAllSeriesCreatorTable, LikeTable
                 )
                 SchemaUtils.create(
                     UserTable, ProfileTable, MediaTable, MediaSeriesTable, MediaAllSeriesTable,
                     ActorTable, CreatorTable, GenreTable, MediaAllSeriesActorTable, MediaAllSeriesGenreTable,
-                    MediaAllSeriesCreatorTable
+                    MediaAllSeriesCreatorTable, LikeTable
                 )
 
                 UserTable.insert {
@@ -40,11 +41,26 @@ class AppInitiator {
                     it[role] = Role.ADMIN
                 }
 
+                var userIds = ArrayList<UUID>()
                 for (i in 1..5) {
-                    UserTable.insert {
-                        it[email] = "user$i@cotlin.com"
-                        it[password] = "user${i}pw!@"
-                        it[role] = Role.USER
+                    userIds.add(
+                        UserTable.insertAndGetId {
+                            it[email] = "user$i@cotlin.com"
+                            it[password] = "user${i}pw!@"
+                            it[role] = Role.USER
+                        }.value
+                    )
+                }
+
+                for (i in userIds) {
+                    for (j in 1..3) {
+                        ProfileTable.insert {
+                            it[user_id] = i
+                            it[name] = "프로필 $j"
+                            it[rate] = "19+"
+                            it[mainImage] = "프로필 ${j}의 메인 이미지"
+                            it[isDeleted] = false
+                        }
                     }
                 }
 

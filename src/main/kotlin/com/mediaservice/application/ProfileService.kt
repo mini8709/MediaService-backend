@@ -1,5 +1,7 @@
 package com.mediaservice.application
 
+import com.mediaservice.application.dto.user.LikeRequestDto
+import com.mediaservice.application.dto.user.LikeResponseDto
 import com.mediaservice.application.dto.user.ProfileCreateRequestDto
 import com.mediaservice.application.dto.user.ProfileResponseDto
 import com.mediaservice.application.dto.user.ProfileUpdateRequestDto
@@ -8,7 +10,10 @@ import com.mediaservice.application.validator.IsDeletedValidator
 import com.mediaservice.application.validator.ProfileNumberValidator
 import com.mediaservice.application.validator.UserEqualValidator
 import com.mediaservice.application.validator.Validator
+import com.mediaservice.domain.Like
 import com.mediaservice.domain.Profile
+import com.mediaservice.domain.repository.LikeRepository
+import com.mediaservice.domain.repository.MediaAllSeriesRepository
 import com.mediaservice.domain.repository.ProfileRepository
 import com.mediaservice.domain.repository.UserRepository
 import com.mediaservice.exception.BadRequestException
@@ -20,7 +25,9 @@ import java.util.UUID
 @Service
 class ProfileService(
     private val profileRepository: ProfileRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val mediaAllSeriesRepository: MediaAllSeriesRepository,
+    private val likeRepository: LikeRepository
 ) {
     @Transactional(readOnly = true)
     fun findById(id: UUID): ProfileResponseDto {
@@ -111,6 +118,30 @@ class ProfileService(
             ) ?: throw BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH PROFILE $profileId"
             )
+        )
+    }
+
+    @Transactional
+    fun createLike(
+        likeRequestDto: LikeRequestDto
+    ): LikeResponseDto {
+        val profile = this.profileRepository.findById(likeRequestDto.profileId)
+            ?: throw BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                "NO SUCH PROFILE ${likeRequestDto.profileId}"
+            )
+
+        val mediaAllSeries = this.mediaAllSeriesRepository.findById(likeRequestDto.mediaAllSeriesId)
+            ?: throw BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                "NO SUCH MEDIA ALL SERIES ${likeRequestDto.mediaAllSeriesId}"
+            )
+
+        val validator: Validator = IsDeletedValidator(profile.isDeleted, Profile.DOMAIN)
+        validator.validate()
+
+        return LikeResponseDto.from(
+            this.likeRepository.save(Like.of(profile, mediaAllSeries))
         )
     }
 }
