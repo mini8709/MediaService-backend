@@ -13,7 +13,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @EnableWebSecurity
 @Order(1)
 class SecurityConfig(
-    private val jwtAuthenticationFilter: JwtAuthenticationFilter,
+    private val jwtTokenProvider: JwtTokenProvider,
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint
 ) : WebSecurityConfigurerAdapter() {
 
@@ -34,7 +34,7 @@ class SecurityConfig(
             .anyRequest().authenticated()
             .and()
             .addFilterBefore(
-                this.jwtAuthenticationFilter,
+                JwtAuthenticationFilter(this.jwtTokenProvider),
                 BasicAuthenticationFilter::class.java
             )
     }

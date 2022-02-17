@@ -1,25 +1,29 @@
 package com.mediaservice.config
 
+import com.mediaservice.exception.ErrorCode
 import io.jsonwebtoken.io.IOException
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.stereotype.Component
-import org.springframework.web.filter.GenericFilterBean
+import org.springframework.web.filter.OncePerRequestFilter
 import javax.servlet.FilterChain
 import javax.servlet.ServletException
-import javax.servlet.ServletRequest
-import javax.servlet.ServletResponse
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
-@Component
-class RoleAuthenticationFilter(private val tokenProvider: JwtTokenProvider) : GenericFilterBean() {
+class RoleAuthenticationFilter(
+    private val tokenProvider: JwtTokenProvider,
+    private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint
+) : OncePerRequestFilter() {
     @Throws(IOException::class, ServletException::class)
-    override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
-        val token: String? = this.tokenProvider.resolveAccessToken(request as HttpServletRequest)
-        if (token != null && this.tokenProvider.checkAdmin(token, request)) {
-            val auth: Authentication = this.tokenProvider.getAuthentication(token, request)
-            SecurityContextHolder.getContext().authentication = auth
+    override fun doFilterInternal(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        filterChain: FilterChain
+    ) {
+        val token: String? = this.tokenProvider.resolveAccessToken(request)
+        if (token == null || !this.tokenProvider.checkAdmin(token, request)) {
+            request.setAttribute("errorCode", ErrorCode.NOT_ACCESSIBLE)
+            jwtAuthenticationEntryPoint.commence(request, response, null)
+        } else {
+            filterChain.doFilter(request, response)
         }
-        chain.doFilter(request, response)
     }
 }

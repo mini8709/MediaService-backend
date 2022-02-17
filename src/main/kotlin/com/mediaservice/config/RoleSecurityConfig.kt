@@ -1,42 +1,33 @@
 package com.mediaservice.config
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.core.annotation.Order
-import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
-import org.springframework.security.config.http.SessionCreationPolicy
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import javax.servlet.Filter
 
 @Configuration
-@EnableWebSecurity
-@Order(2)
 class RoleSecurityConfig(
-    private val roleAuthenticationFilter: RoleAuthenticationFilter,
+    private val tokenProvider: JwtTokenProvider,
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint
-) : WebSecurityConfigurerAdapter() {
+) : WebMvcConfigurer {
+    private val urlPatterns = arrayListOf(
+        "/api/v1/actor",
+        "/api/v1/creator",
+        "/api/v1/genre",
+        "/api/v1/media",
+        "/api/v1/media-series"
+    )
 
-    override fun configure(http: HttpSecurity) {
-        http
-            .httpBasic().disable()
-            .csrf().disable()
-            .exceptionHandling()
-            .authenticationEntryPoint(this.jwtAuthenticationEntryPoint)
-            .and()
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-            .authorizeRequests()
-            .antMatchers(
-                "/api/v1/actor",
-                "/api/v1/creator",
-                "/api/v1/genre",
-                "/api/v1/media",
-                "/api/v1/media-series"
-            ).authenticated()
-            .and()
-            .addFilterBefore(
-                this.roleAuthenticationFilter,
-                BasicAuthenticationFilter::class.java
-            )
+    @Bean
+    fun getRuleFilter(): FilterRegistrationBean<Filter> {
+        val registrationBean = FilterRegistrationBean<Filter>(
+            RoleAuthenticationFilter(tokenProvider, jwtAuthenticationEntryPoint)
+        )
+
+        urlPatterns.stream().forEach { url -> registrationBean.addUrlPatterns(url) }
+        registrationBean.order = 0
+
+        return registrationBean
     }
 }

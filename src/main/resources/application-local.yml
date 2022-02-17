@@ -14,7 +14,7 @@ spring:
       min-idle: 0
       max-idle: 8
       max-active: 8
-    port: 6379
+    port: 63790
     host: 127.0.0.1
 
   config:

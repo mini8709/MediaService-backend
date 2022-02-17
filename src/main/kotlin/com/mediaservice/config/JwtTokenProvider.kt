@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @Component
-class JwtTokenProvider(env: Environment, refreshTokenRepository: RefreshTokenRepository) {
+class JwtTokenProvider(env: Environment, private val refreshTokenRepository: RefreshTokenRepository) {
     val accessKey = env.getProperty("JWT.access_secret")?.toByteArray()
     val refreshKey = env.getProperty("JWT.refresh_secret")?.toByteArray()
     val accessValidTime = 10
@@ -70,8 +70,7 @@ class JwtTokenProvider(env: Environment, refreshTokenRepository: RefreshTokenRep
         accessToken: String?,
         refreshToken: String?,
         request: HttpServletRequest,
-        response: HttpServletResponse,
-        refreshTokenRepository: RefreshTokenRepository
+        response: HttpServletResponse
     ): Boolean {
         val accessClaims = try {
             Jwts.parserBuilder().setSigningKey(this.accessKey).build().parseClaimsJws(accessToken).body
@@ -93,7 +92,7 @@ class JwtTokenProvider(env: Environment, refreshTokenRepository: RefreshTokenRep
                 return false
             }
 
-            if (refreshTokenRepository.findById(refreshToken!!).isPresent) {
+            if (this.refreshTokenRepository.findById(refreshToken!!).isPresent) {
                 response.setHeader(
                     "access_token",
                     this.createAccessToken(
