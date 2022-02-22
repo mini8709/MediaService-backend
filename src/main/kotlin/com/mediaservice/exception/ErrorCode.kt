@@ -9,6 +9,7 @@ enum class ErrorCode(val code: Int) {
     INVALID_FORMAT(40002),
     ROW_ALREADY_DELETED(40003),
     NO_MORE_ITEM(40004),
+    RATE_NOT_MATCHED(40005),
 
     /**
      *  401 Unauthorized Error

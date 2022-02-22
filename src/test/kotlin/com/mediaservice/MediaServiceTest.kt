@@ -2,6 +2,9 @@ package com.mediaservice
 
 import com.mediaservice.application.MediaService
 import com.mediaservice.application.dto.media.MediaResponseDto
+import com.mediaservice.domain.Actor
+import com.mediaservice.domain.Creator
+import com.mediaservice.domain.Genre
 import com.mediaservice.domain.Media
 import com.mediaservice.domain.MediaAllSeries
 import com.mediaservice.domain.MediaSeries
@@ -26,6 +29,9 @@ class MediaServiceTest {
     private lateinit var mediaId: UUID
     private lateinit var mediaSeriesId: UUID
     private lateinit var mediaAllSeriesId: UUID
+    private lateinit var actorList: List<Actor>
+    private lateinit var genreList: List<Genre>
+    private lateinit var creatorList: List<Creator>
 
     @BeforeEach
     fun setup() {
@@ -33,13 +39,18 @@ class MediaServiceTest {
         this.mediaId = UUID.randomUUID()
         this.mediaSeriesId = UUID.randomUUID()
         this.mediaAllSeriesId = UUID.randomUUID()
+        this.actorList = listOf(Actor(UUID.randomUUID(), "testActor", false))
+        this.genreList = listOf(Genre(UUID.randomUUID(), "testGenre", false))
+        this.creatorList = listOf(Creator(UUID.randomUUID(), "testCreator", false))
         this.mediaAllSeries = MediaAllSeries(
             mediaAllSeriesId, "test title", "test synopsis", "test trailer",
-            "test thumbnail url", "19+", true
+            "test thumbnail url", "19+", true, false, this.actorList, this.genreList, this.creatorList
         )
-        this.mediaSeries = MediaSeries(mediaSeriesId, "season 1", 1, this.mediaAllSeries)
-        this.media =
-            Media(mediaId, "test video 1", "test synopsis", 1, "test url", "test thumbnail", 100, this.mediaSeries)
+        this.mediaSeries = MediaSeries(mediaSeriesId, "season 1", 1, false, this.mediaAllSeries)
+        this.media = Media(
+            mediaId, "test video 1", "test synopsis", 1, "test url",
+            "test thumbnail", 100, false, this.mediaSeries
+        )
     }
 
     @Test

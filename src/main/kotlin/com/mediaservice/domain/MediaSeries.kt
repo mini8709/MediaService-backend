@@ -10,15 +10,23 @@ import java.util.UUID
 object MediaSeriesTable : UUIDTable(name = "TB_MEDIASERIES") {
     val title: Column<String> = varchar("title", 255)
     val order: Column<Int> = integer("order")
+    val isDeleted: Column<Boolean> = bool("isDeleted")
     val mediaAllSeries = reference("media_all_series", MediaAllSeriesTable)
 }
 
-class MediaSeries(var id: UUID, var title: String, var order: Int, var mediaAllSeries: MediaAllSeries) {
+class MediaSeries(
+    var id: UUID,
+    var title: String,
+    var order: Int,
+    var isDeleted: Boolean,
+    var mediaAllSeries: MediaAllSeries
+) {
     companion object {
         fun from(mediaSeriesEntity: MediaSeriesEntity) = MediaSeries(
             id = mediaSeriesEntity.id.value,
             title = mediaSeriesEntity.title,
             order = mediaSeriesEntity.order,
+            isDeleted = mediaSeriesEntity.isDeleted,
             mediaAllSeries = MediaAllSeries.from(mediaSeriesEntity.mediaAllSeries)
         )
     }
@@ -29,6 +37,6 @@ class MediaSeriesEntity(id: EntityID<UUID>) : UUIDEntity(id) {
 
     var title by MediaSeriesTable.title
     var order by MediaSeriesTable.order
+    var isDeleted by MediaSeriesTable.isDeleted
     var mediaAllSeries by MediaAllSeriesEntity referencedOn MediaSeriesTable.mediaAllSeries
-    val mediaList by MediaEntity referrersOn MediaTable.mediaSeries
 }

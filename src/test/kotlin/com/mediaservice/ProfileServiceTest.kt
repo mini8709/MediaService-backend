@@ -6,6 +6,9 @@ import com.mediaservice.application.dto.user.LikeResponseDto
 import com.mediaservice.application.dto.user.ProfileCreateRequestDto
 import com.mediaservice.application.dto.user.ProfileUpdateRequestDto
 import com.mediaservice.application.dto.user.SignInProfileResponseDto
+import com.mediaservice.domain.Actor
+import com.mediaservice.domain.Creator
+import com.mediaservice.domain.Genre
 import com.mediaservice.domain.Like
 import com.mediaservice.domain.MediaAllSeries
 import com.mediaservice.domain.Profile
@@ -46,6 +49,9 @@ class ProfileServiceTest {
     private lateinit var profileUpdateRequestDto: ProfileUpdateRequestDto
     private lateinit var mediaAllSeries: MediaAllSeries
     private lateinit var like: Like
+    private lateinit var actorList: List<Actor>
+    private lateinit var genreList: List<Genre>
+    private lateinit var creatorList: List<Creator>
 
     @BeforeEach
     fun setUp() {
@@ -59,9 +65,12 @@ class ProfileServiceTest {
         this.profileAfterUpdate = Profile(profileId, user, "name", "19+", "image_url2", false)
         this.profileUpdateRequestDto = ProfileUpdateRequestDto("name", "19+", "image_url2")
         this.profileCreateRequestDto = ProfileCreateRequestDto("action", "19+", "image_url")
+        this.actorList = listOf(Actor(UUID.randomUUID(), "testActor", false))
+        this.genreList = listOf(Genre(UUID.randomUUID(), "testGenre", false))
+        this.creatorList = listOf(Creator(UUID.randomUUID(), "testCreator", false))
         this.mediaAllSeries = MediaAllSeries(
-            mediaAllSeriesId, "test title", "test synopsis",
-            "test trailer", "test thumbnail", "19+", true
+            mediaAllSeriesId, "test title", "test synopsis", "test trailer",
+            "test thumbnail", "19+", true, false, this.actorList, this.genreList, this.creatorList
         )
         this.like = Like(profile, mediaAllSeries)
     }

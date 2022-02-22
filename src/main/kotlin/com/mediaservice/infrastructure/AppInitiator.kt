@@ -74,6 +74,7 @@ class AppInitiator {
                             it[thumbnail] = "전체 미디어 ${i}의 썸네일"
                             it[rate] = "19+"
                             it[isSeries] = true
+                            it[isDeleted] = false
                         }.value
                     )
                 }
@@ -85,6 +86,7 @@ class AppInitiator {
                             MediaSeriesTable.insertAndGetId {
                                 it[title] = "전체 미디어 ${i}의 시즌 $j"
                                 it[order] = j
+                                it[isDeleted] = false
                                 it[mediaAllSeries] = mediaAllSeriesIds[i - 1]
                             }.value
                         )
@@ -101,6 +103,7 @@ class AppInitiator {
                                 it[url] = "dummyurl$i/$j/$k.mp4"
                                 it[thumbnail] = "미디어 $i 시즌 $j ${k}화의 썸네일"
                                 it[runningTime] = 60
+                                it[isDeleted] = false
                                 it[mediaSeries] = mediaSeriesIds[((i - 1) * 2 + j) - 1]
                             }
                         }

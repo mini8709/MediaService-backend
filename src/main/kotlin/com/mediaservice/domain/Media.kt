@@ -14,6 +14,7 @@ object MediaTable : UUIDTable(name = "TB_MEDIA") {
     val url: Column<String> = varchar("url", 255)
     val thumbnail: Column<String> = varchar("thumbnail", 255)
     val runningTime: Column<Int> = integer("running_time")
+    val isDeleted: Column<Boolean> = bool("isDeleted")
     val mediaSeries = reference("media_series", MediaSeriesTable)
 }
 
@@ -25,9 +26,12 @@ class Media(
     var url: String,
     var thumbnail: String,
     var runningTime: Int,
+    var isDeleted: Boolean,
     var mediaSeries: MediaSeries
 ) {
     companion object {
+        const val DOMAIN = "MEDIA"
+
         fun from(mediaEntity: MediaEntity) = Media(
             id = mediaEntity.id.value,
             name = mediaEntity.name,
@@ -36,6 +40,7 @@ class Media(
             url = mediaEntity.url,
             thumbnail = mediaEntity.thumbnail,
             runningTime = mediaEntity.runningTime,
+            isDeleted = mediaEntity.isDeleted,
             mediaSeries = MediaSeries.from(mediaEntity.mediaSeries)
         )
     }
@@ -50,5 +55,6 @@ class MediaEntity(id: EntityID<UUID>) : UUIDEntity(id) {
     var url by MediaTable.url
     var thumbnail by MediaTable.thumbnail
     var runningTime by MediaTable.runningTime
+    var isDeleted by MediaTable.isDeleted
     var mediaSeries by MediaSeriesEntity referencedOn MediaTable.mediaSeries
 }

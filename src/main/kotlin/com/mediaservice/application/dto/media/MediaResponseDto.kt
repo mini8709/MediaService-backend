@@ -1,7 +1,6 @@
 package com.mediaservice.application.dto.media
 
 import com.mediaservice.domain.Media
-import com.mediaservice.domain.MediaSeries
 
 data class MediaResponseDto(
     val name: String,
@@ -9,8 +8,7 @@ data class MediaResponseDto(
     val order: Int,
     val url: String,
     val thumbnail: String,
-    val runningTime: Int,
-    val mediaSeries: MediaSeries
+    val runningTime: Int
 ) {
     companion object {
         fun from(media: Media) = MediaResponseDto(
@@ -20,7 +18,6 @@ data class MediaResponseDto(
             url = media.url,
             thumbnail = media.thumbnail,
             runningTime = media.runningTime,
-            mediaSeries = media.mediaSeries
         )
     }
 }
