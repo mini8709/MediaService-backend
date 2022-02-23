@@ -5,6 +5,8 @@ import com.mediaservice.application.dto.user.PasswordFindRequestDto
 import com.mediaservice.application.dto.user.PasswordUpdateRequestDto
 import com.mediaservice.application.dto.user.SignInRequestDto
 import com.mediaservice.application.dto.user.SignUpRequestDto
+import com.mediaservice.application.dto.user.SignUpVerifyAuthRequestDto
+import com.mediaservice.application.dto.user.SignUpVerifyMailRequestDto
 import com.mediaservice.application.dto.user.UserResponseDto
 import com.mediaservice.config.JwtTokenProvider
 import com.mediaservice.domain.Profile
@@ -17,7 +19,9 @@ import com.mediaservice.domain.repository.UserRepository
 import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.ErrorCode
 import com.mediaservice.exception.ServerUnavailableException
+import com.mediaservice.infrastructure.Authentication
 import com.mediaservice.infrastructure.GoogleMailSender
+import com.mediaservice.infrastructure.RedisUtil
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -37,12 +41,16 @@ class UserServiceTest {
     private var tokenProvider = mockk<JwtTokenProvider>()
     private var refreshTokenRepository = mockk<RefreshTokenRepository>()
     private val mailSender = mockk<GoogleMailSender>()
+    private val redisUtil = mockk<RedisUtil>()
+    private val authentication = mockk<Authentication>()
     private var userService: UserService = UserService(
         this.userRepository,
         this.profileRepository,
+        this.redisUtil,
         this.refreshTokenRepository,
         this.tokenProvider,
-        this.mailSender
+        this.mailSender,
+        this.authentication
     )
 
     private lateinit var user: User
@@ -55,6 +63,7 @@ class UserServiceTest {
     private lateinit var session: Session
     private lateinit var message: MimeMessage
     private lateinit var refreshToken: RefreshToken
+    private lateinit var signUpKey: String
 
     @BeforeEach
     fun setup() {
@@ -69,6 +78,7 @@ class UserServiceTest {
         this.session = Session.getDefaultInstance(prop)
         this.message = MimeMessage(session)
         this.refreshToken = RefreshToken("refresh_token")
+        this.signUpKey = "sign-up key"
     }
 
     @Test
@@ -98,6 +108,55 @@ class UserServiceTest {
     }
 
     @Test
+    fun successSignUpVerifyMail() {
+        // given
+        val signUpVerifyMailRequestDto = SignUpVerifyMailRequestDto("test@gmail.com")
+
+        every { userRepository.findByEmail(signUpVerifyMailRequestDto.email) } returns null
+        every { authentication.createSignUpKey() } returns this.signUpKey
+        every { redisUtil.setDataExpire(signUpVerifyMailRequestDto.email, signUpKey, 180) } returns this.signUpKey
+        every { mailSender.sendMailWithSignUpKey(signUpVerifyMailRequestDto.email, signUpKey) } returns Unit
+
+        // when
+        val email = this.userService.signUpVerifyMail(signUpVerifyMailRequestDto)
+
+        // then
+        assertEquals(email, "test@gmail.com")
+    }
+
+    @Test
+    fun failSignUpVerifyMailDuplicatedEmail() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            val signUpVerifyMailRequestDto = SignUpVerifyMailRequestDto("test@gmail.com")
+
+            every { userRepository.findByEmail(signUpVerifyMailRequestDto.email) } returns this.user
+
+            // when
+            this.userService.signUpVerifyMail(signUpVerifyMailRequestDto)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_ALREADY_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun failSignUpVerifyAuth_ValidTimeOut() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            val signUpVerifyAuthRequestDto = SignUpVerifyAuthRequestDto("test@gmail.com", "1234")
+
+            every { redisUtil.getData(signUpVerifyAuthRequestDto.email) } returns null
+
+            // when
+            this.userService.signUpVerifyAuth(signUpVerifyAuthRequestDto)
+        }
+
+        // then
+        assertEquals(ErrorCode.NOT_ACCESSIBLE, exception.errorCode)
+    }
+
+    @Test
     fun successSignUp() {
         // given
         mockkObject(User)
@@ -105,6 +164,7 @@ class UserServiceTest {
 
         every { User.of(signUpRequestDto.email, signUpRequestDto.password, Role.USER) } returns this.user
         every { userRepository.findByEmail(signUpRequestDto.email) } returns null
+        every { redisUtil.getData(signUpRequestDto.email) } returns this.signUpKey
         every { userRepository.save(user) } returns this.user
 
         // when
@@ -112,22 +172,6 @@ class UserServiceTest {
 
         // then
         assertEquals(this.user.email, userResponseDto.email)
-    }
-
-    @Test
-    fun failSignUp_DuplicatedEmail() {
-        val exception = assertThrows(BadRequestException::class.java) {
-            // given
-            val signUpRequestDto = SignUpRequestDto("test@gmail.com", "1234")
-
-            every { userRepository.findByEmail(signUpRequestDto.email) } returns this.user
-
-            // when
-            this.userService.signUp(signUpRequestDto)
-        }
-
-        // then
-        assertEquals(ErrorCode.ROW_ALREADY_EXIST, exception.errorCode)
     }
 
     @Test

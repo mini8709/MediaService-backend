@@ -6,6 +6,8 @@ import com.mediaservice.application.dto.user.ProfileResponseDto
 import com.mediaservice.application.dto.user.SignInRequestDto
 import com.mediaservice.application.dto.user.SignInResponseDto
 import com.mediaservice.application.dto.user.SignUpRequestDto
+import com.mediaservice.application.dto.user.SignUpVerifyAuthRequestDto
+import com.mediaservice.application.dto.user.SignUpVerifyMailRequestDto
 import com.mediaservice.application.dto.user.UserResponseDto
 import com.mediaservice.application.validator.PasswordFormatValidator
 import com.mediaservice.application.validator.PasswordValidator
@@ -18,7 +20,9 @@ import com.mediaservice.domain.repository.RefreshTokenRepository
 import com.mediaservice.domain.repository.UserRepository
 import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.ErrorCode
+import com.mediaservice.infrastructure.Authentication
 import com.mediaservice.infrastructure.GoogleMailSender
+import com.mediaservice.infrastructure.RedisUtil
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -27,9 +31,11 @@ import java.util.UUID
 class UserService(
     private val userRepository: UserRepository,
     private val profileRepository: ProfileRepository,
+    private val redisUtil: RedisUtil,
     private val refreshTokenRepository: RefreshTokenRepository,
     private val tokenProvider: JwtTokenProvider,
-    private val mailSender: GoogleMailSender
+    private val mailSender: GoogleMailSender,
+    private val authentication: Authentication
 ) {
     @Transactional(readOnly = true)
     fun findById(id: UUID): UserResponseDto {
@@ -45,6 +51,29 @@ class UserService(
         return this.userRepository.findByEmail(email)?.let {
             true
         } ?: false
+    }
+
+    @Transactional(readOnly = true)
+    fun signUpVerifyMail(signUpVerifyMailRequestDto: SignUpVerifyMailRequestDto): String {
+        this.userRepository.findByEmail(signUpVerifyMailRequestDto.email)?.let {
+            throw BadRequestException(ErrorCode.ROW_ALREADY_EXIST, "DUPLICATE EMAIL")
+        }
+
+        this.mailSender.sendMailWithSignUpKey(
+            signUpVerifyMailRequestDto.email,
+            redisUtil.setDataExpire(
+                signUpVerifyMailRequestDto.email, this.authentication.createSignUpKey(), 180
+            )
+        )
+
+        return signUpVerifyMailRequestDto.email
+    }
+
+    @Transactional(readOnly = true)
+    fun signUpVerifyAuth(signUpVerifyAuthRequestDto: SignUpVerifyAuthRequestDto) {
+        if (this.redisUtil.getData(signUpVerifyAuthRequestDto.email) != signUpVerifyAuthRequestDto.signUpKey) {
+            throw BadRequestException(ErrorCode.NOT_ACCESSIBLE, "VALID TIME OUT")
+        }
     }
 
     @Transactional
