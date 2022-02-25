@@ -45,8 +45,8 @@ class ProfileService(
 
     @Transactional
     fun create(
-        profileCreateRequestDto: ProfileCreateRequestDto,
-        userId: UUID
+        userId: UUID,
+        profileCreateRequestDto: ProfileCreateRequestDto
     ): ProfileResponseDto {
         val user = userRepository.findById(userId)
             ?: throw BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH USER $userId")

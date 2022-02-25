@@ -31,12 +31,12 @@ class ProfileController(private val profileService: ProfileService) {
         return this.profileService.findByUserId(id)
     }
 
-    @PostMapping("/")
+    @PostMapping
     fun create(
-        @RequestBody profileCreateRequestDto: ProfileCreateRequestDto,
-        @AuthenticationPrincipal userId: String
+        @AuthenticationPrincipal userId: String,
+        @RequestBody profileCreateRequestDto: ProfileCreateRequestDto
     ): ProfileResponseDto? {
-        return profileService.create(profileCreateRequestDto, UUID.fromString(userId))
+        return profileService.create(UUID.fromString(userId), profileCreateRequestDto)
     }
 
     @DeleteMapping("/{id}")

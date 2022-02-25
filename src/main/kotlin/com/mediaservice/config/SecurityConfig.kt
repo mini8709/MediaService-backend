@@ -28,7 +28,8 @@ class SecurityConfig(
             .and()
             .authorizeRequests()
             .antMatchers(
-                "/api/v1/auth/**"
+                "/api/**/auth/**",
+                "/api/**/users/email/is-duplicated"
             )
             .permitAll()
             .anyRequest().authenticated()

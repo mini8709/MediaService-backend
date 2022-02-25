@@ -305,7 +305,7 @@ class ProfileServiceTest {
         } returns user
 
         // when
-        val profileResponseDto = profileService.create(profileCreateRequestDto, userId)
+        val profileResponseDto = profileService.create(userId, profileCreateRequestDto)
 
         // then
         assertEquals(profileCreateRequestDto.mainImage, profileResponseDto.mainImage)
@@ -322,7 +322,7 @@ class ProfileServiceTest {
                 profileRepository.countByUserId(userId)
             } returns 5
             // when
-            profileService.create(profileCreateRequestDto, userId)
+            profileService.create(userId, profileCreateRequestDto)
         }
         // then
         assertEquals(ErrorCode.NO_MORE_ITEM, exception.errorCode)
@@ -336,7 +336,7 @@ class ProfileServiceTest {
                 userRepository.findById(any())
             } returns null
             // when
-            profileService.create(profileCreateRequestDto, userId)
+            profileService.create(userId, profileCreateRequestDto)
         }
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
@@ -372,7 +372,7 @@ class ProfileServiceTest {
                 profileRepository.findById(any())
             } returns null
             // when
-            val likeResponseDto: LikeResponseDto = profileService.createLike(likeRequestDto)
+            profileService.createLike(likeRequestDto)
         }
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
@@ -390,7 +390,7 @@ class ProfileServiceTest {
                 mediaAllSeriesRepository.findById(mediaAllSeriesId)
             } returns null
             // when
-            val likeResponseDto: LikeResponseDto = profileService.createLike(likeRequestDto)
+            profileService.createLike(likeRequestDto)
         }
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
@@ -408,7 +408,7 @@ class ProfileServiceTest {
                 mediaAllSeriesRepository.findById(mediaAllSeriesId)
             } returns mediaAllSeries
             // when
-            val likeResponseDto: LikeResponseDto = profileService.createLike(likeRequestDto)
+            profileService.createLike(likeRequestDto)
         }
         // then
         assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)
@@ -444,7 +444,7 @@ class ProfileServiceTest {
                 profileRepository.findById(any())
             } returns null
             // when
-            val likeResponseDto: LikeResponseDto = profileService.deleteLike(likeRequestDto)
+            profileService.deleteLike(likeRequestDto)
         }
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
@@ -462,7 +462,7 @@ class ProfileServiceTest {
                 mediaAllSeriesRepository.findById(mediaAllSeriesId)
             } returns null
             // when
-            val likeResponseDto: LikeResponseDto = profileService.deleteLike(likeRequestDto)
+            profileService.deleteLike(likeRequestDto)
         }
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
@@ -480,7 +480,7 @@ class ProfileServiceTest {
                 mediaAllSeriesRepository.findById(mediaAllSeriesId)
             } returns mediaAllSeries
             // when
-            val likeResponseDto: LikeResponseDto = profileService.deleteLike(likeRequestDto)
+            profileService.deleteLike(likeRequestDto)
         }
         // then
         assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)

@@ -4,6 +4,7 @@ import com.mediaservice.domain.Profile
 import com.mediaservice.domain.ProfileEntity
 import com.mediaservice.domain.ProfileTable
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.insert
 import org.springframework.stereotype.Repository
 import java.util.UUID
 
@@ -26,13 +27,15 @@ class ProfileRepository {
     }
 
     fun save(profile: Profile): Profile {
-        return ProfileEntity.new {
-            name = profile.name
-            mainImage = profile.mainImage
-            rate = profile.rate
-        }.let {
-            Profile.from(it)
-        }
+        val id = ProfileTable.insert {
+            it[name] = profile.name
+            it[mainImage] = profile.mainImage
+            it[rate] = profile.rate
+            it[isDeleted] = false
+            it[user_id] = profile.user.id
+        } get ProfileTable.id
+        profile.id = id.value
+        return profile
     }
 
     fun delete(id: UUID): Profile? {
@@ -43,13 +46,11 @@ class ProfileRepository {
     }
 
     fun update(profile: Profile): Profile? {
-        return profile.id?.let { uuid ->
-            ProfileEntity.findById(uuid)?.let { profileEntity ->
-                profileEntity.name = profile.name
-                profileEntity.mainImage = profile.mainImage
-                profileEntity.rate = profile.rate
-                return Profile.from(profileEntity)
-            }
+        return ProfileEntity.findById(profile.id!!)?.let { profileEntity ->
+            profileEntity.name = profile.name
+            profileEntity.mainImage = profile.mainImage
+            profileEntity.rate = profile.rate
+            return Profile.from(profileEntity)
         }
     }
 }
