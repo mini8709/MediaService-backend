@@ -78,4 +78,30 @@ class MediaServiceTest {
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
     }
+
+    @Test
+    fun successFindByMediaSeries() {
+        // given
+        every { mediaRepository.findByMediaSeriesId(mediaSeriesId) } returns listOf(this.media)
+
+        // when
+        val mediaList: List<MediaResponseDto> = this.mediaService.findByMediaSeries(this.mediaSeriesId)
+
+        // then
+        assertEquals(this.media.name, mediaList[0].name)
+    }
+
+    @Test
+    fun failFindByMediaSeries() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            every { mediaRepository.findByMediaSeriesId(mediaSeriesId) } returns null
+
+            // when
+            this.mediaService.findByMediaSeries(this.mediaSeriesId)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
 }

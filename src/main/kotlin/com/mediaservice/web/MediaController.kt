@@ -15,4 +15,9 @@ class MediaController(private val mediaService: MediaService) {
     fun findById(@PathVariable id: UUID): MediaResponseDto {
         return this.mediaService.findById(id)
     }
+
+    @GetMapping("/list/{id}")
+    fun findByMediaSeries(@PathVariable id: UUID): List<MediaResponseDto> {
+        return this.mediaService.findByMediaSeries(id)
+    }
 }

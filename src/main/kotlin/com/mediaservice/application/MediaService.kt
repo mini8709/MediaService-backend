@@ -21,4 +21,14 @@ class MediaService(
             )
         )
     }
+
+    @Transactional(readOnly = true)
+    fun findByMediaSeries(id: UUID): List<MediaResponseDto> {
+        return this.mediaRepository.findByMediaSeriesId(id)?.map {
+            MediaResponseDto.from(it)
+        } ?: throw BadRequestException(
+            ErrorCode.ROW_DOES_NOT_EXIST,
+            "NO SUCH MEDIA LIST WITH MEDIA SERIES $id"
+        )
+    }
 }
