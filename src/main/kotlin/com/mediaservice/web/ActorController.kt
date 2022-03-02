@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-@RequestMapping("/api/v1/actor")
+@RequestMapping("/api/v1/actors")
 class ActorController(private val actorService: ActorService) {
     @PostMapping("")
     fun create(

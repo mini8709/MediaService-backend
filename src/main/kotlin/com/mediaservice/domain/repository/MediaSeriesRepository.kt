@@ -17,7 +17,7 @@ class MediaSeriesRepository {
 
     fun findByMediaAllSeriesId(id: UUID): List<MediaSeries>? {
         return MediaSeriesEntity.find {
-            MediaSeriesTable.mediaAllSeries eq id and (MediaSeriesTable.isDeleted eq false)
+            MediaSeriesTable.mediaContents eq id and (MediaSeriesTable.isDeleted eq false)
         }.sortedBy {
             it.order
         }.map {

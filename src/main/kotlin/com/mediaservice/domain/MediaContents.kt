@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Table
 import java.util.UUID
 
-object MediaAllSeriesTable : UUIDTable(name = "TB_MEDIAALLSERIES") {
+object MediaContentsTable : UUIDTable(name = "TB_MEDIA_CONTENTS") {
     val title: Column<String> = varchar("title", 255)
     val synopsis: Column<String> = text("synopsis")
     val trailer: Column<String> = varchar("trailer", 255)
@@ -18,7 +18,7 @@ object MediaAllSeriesTable : UUIDTable(name = "TB_MEDIAALLSERIES") {
     val isDeleted: Column<Boolean> = bool("isDeleted")
 }
 
-class MediaAllSeries(
+class MediaContents(
     var id: UUID,
     var title: String,
     var synopsis: String,
@@ -32,53 +32,53 @@ class MediaAllSeries(
     var creatorList: List<Creator>?
 ) {
     companion object {
-        const val DOMAIN = "MEDIA ALL SERIES"
+        const val DOMAIN = "MEDIA CONTENTS"
 
-        fun from(mediaAllSeriesEntity: MediaAllSeriesEntity) = MediaAllSeries(
-            id = mediaAllSeriesEntity.id.value,
-            title = mediaAllSeriesEntity.title,
-            synopsis = mediaAllSeriesEntity.synopsis,
-            trailer = mediaAllSeriesEntity.trailer,
-            thumbnail = mediaAllSeriesEntity.thumbnail,
-            rate = mediaAllSeriesEntity.rate,
-            isSeries = mediaAllSeriesEntity.isSeries,
-            isDeleted = mediaAllSeriesEntity.isDeleted,
-            actorList = mediaAllSeriesEntity.actorList.map { Actor.from(it) },
-            genreList = mediaAllSeriesEntity.genreList.map { Genre.from(it) },
-            creatorList = mediaAllSeriesEntity.creatorList.map { Creator.from(it) }
+        fun from(mediaContentsEntity: MediaContentsEntity) = MediaContents(
+            id = mediaContentsEntity.id.value,
+            title = mediaContentsEntity.title,
+            synopsis = mediaContentsEntity.synopsis,
+            trailer = mediaContentsEntity.trailer,
+            thumbnail = mediaContentsEntity.thumbnail,
+            rate = mediaContentsEntity.rate,
+            isSeries = mediaContentsEntity.isSeries,
+            isDeleted = mediaContentsEntity.isDeleted,
+            actorList = mediaContentsEntity.actorList.map { Actor.from(it) },
+            genreList = mediaContentsEntity.genreList.map { Genre.from(it) },
+            creatorList = mediaContentsEntity.creatorList.map { Creator.from(it) }
         )
     }
 }
 
-class MediaAllSeriesEntity(id: EntityID<UUID>) : UUIDEntity(id) {
-    companion object : UUIDEntityClass<MediaAllSeriesEntity>(MediaAllSeriesTable)
+class MediaContentsEntity(id: EntityID<UUID>) : UUIDEntity(id) {
+    companion object : UUIDEntityClass<MediaContentsEntity>(MediaContentsTable)
 
-    var title by MediaAllSeriesTable.title
-    var synopsis by MediaAllSeriesTable.synopsis
-    var trailer by MediaAllSeriesTable.trailer
-    var thumbnail by MediaAllSeriesTable.thumbnail
-    var rate by MediaAllSeriesTable.rate
-    var isSeries by MediaAllSeriesTable.isSeries
-    var isDeleted by MediaAllSeriesTable.isDeleted
+    var title by MediaContentsTable.title
+    var synopsis by MediaContentsTable.synopsis
+    var trailer by MediaContentsTable.trailer
+    var thumbnail by MediaContentsTable.thumbnail
+    var rate by MediaContentsTable.rate
+    var isSeries by MediaContentsTable.isSeries
+    var isDeleted by MediaContentsTable.isDeleted
     var actorList by ActorEntity via MediaAllSeriesActorTable
     var creatorList by CreatorEntity via MediaAllSeriesCreatorTable
     var genreList by GenreEntity via MediaAllSeriesGenreTable
 }
 
 object MediaAllSeriesActorTable : Table() {
-    val mediaAllSeries = reference("media_group", MediaAllSeriesTable)
+    val mediaAllSeries = reference("media_group", MediaContentsTable)
     val actor = reference("actor", ActorTable)
     override val primaryKey = PrimaryKey(this.mediaAllSeries, this.actor, name = "PK_MediaAllSeriesActor_mg_act")
 }
 
 object MediaAllSeriesCreatorTable : Table() {
-    val mediaAllSeries = reference("media_group", MediaAllSeriesTable)
+    val mediaAllSeries = reference("media_group", MediaContentsTable)
     val creator = reference("creator", CreatorTable)
     override val primaryKey = PrimaryKey(this.mediaAllSeries, this.creator, name = "PK_MediaAllSeriesDirector_mg_crt")
 }
 
 object MediaAllSeriesGenreTable : Table() {
-    val mediaAllSeries = reference("media_group", MediaAllSeriesTable)
+    val mediaAllSeries = reference("media_group", MediaContentsTable)
     val genre = reference("genre", GenreTable)
     override val primaryKey = PrimaryKey(this.mediaAllSeries, this.genre, name = "PK_MediaAllSeriesGenre_mg_gen")
 }

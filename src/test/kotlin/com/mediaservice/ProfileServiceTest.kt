@@ -10,12 +10,12 @@ import com.mediaservice.domain.Actor
 import com.mediaservice.domain.Creator
 import com.mediaservice.domain.Genre
 import com.mediaservice.domain.Like
-import com.mediaservice.domain.MediaAllSeries
+import com.mediaservice.domain.MediaContents
 import com.mediaservice.domain.Profile
 import com.mediaservice.domain.Role
 import com.mediaservice.domain.User
 import com.mediaservice.domain.repository.LikeRepository
-import com.mediaservice.domain.repository.MediaAllSeriesRepository
+import com.mediaservice.domain.repository.MediaContentsRepository
 import com.mediaservice.domain.repository.ProfileRepository
 import com.mediaservice.domain.repository.UserRepository
 import com.mediaservice.exception.BadRequestException
@@ -33,21 +33,21 @@ import kotlin.test.assertEquals
 class ProfileServiceTest {
     private var profileRepository = mockk<ProfileRepository>()
     private var userRepository = mockk<UserRepository>()
-    private var mediaAllSeriesRepository = mockk<MediaAllSeriesRepository>()
+    private var mediaAllSeriesRepository = mockk<MediaContentsRepository>()
     private var likeRepository = mockk<LikeRepository>()
     private var profileService: ProfileService = ProfileService(
         this.profileRepository, this.userRepository, this.mediaAllSeriesRepository, this.likeRepository
     )
     private lateinit var userId: UUID
     private lateinit var profileId: UUID
-    private lateinit var mediaAllSeriesId: UUID
+    private lateinit var mediaContentsId: UUID
     private lateinit var user: User
     private lateinit var profile: Profile
     private lateinit var profileAlreadyDeleted: Profile
     private lateinit var profileCreateRequestDto: ProfileCreateRequestDto
     private lateinit var profileAfterUpdate: Profile
     private lateinit var profileUpdateRequestDto: ProfileUpdateRequestDto
-    private lateinit var mediaAllSeries: MediaAllSeries
+    private lateinit var mediaContents: MediaContents
     private lateinit var like: Like
     private lateinit var actorList: List<Actor>
     private lateinit var genreList: List<Genre>
@@ -58,7 +58,7 @@ class ProfileServiceTest {
         clearAllMocks()
         this.userId = UUID.randomUUID()
         this.profileId = UUID.randomUUID()
-        this.mediaAllSeriesId = UUID.randomUUID()
+        this.mediaContentsId = UUID.randomUUID()
         this.user = User(userId, "test@emai.com", "password", Role.USER)
         this.profile = Profile(profileId, user, "action", "19+", "image_url", false)
         this.profileAlreadyDeleted = Profile(profileId, user, "action", "19+", "image_url", true)
@@ -68,11 +68,16 @@ class ProfileServiceTest {
         this.actorList = listOf(Actor(UUID.randomUUID(), "testActor", false))
         this.genreList = listOf(Genre(UUID.randomUUID(), "testGenre", false))
         this.creatorList = listOf(Creator(UUID.randomUUID(), "testCreator", false))
-        this.mediaAllSeries = MediaAllSeries(
-            mediaAllSeriesId, "test title", "test synopsis", "test trailer",
-            "test thumbnail", "19+", true, false, this.actorList, this.genreList, this.creatorList
+        this.mediaContents = MediaContents(
+            mediaContentsId, "test title", "test synopsis", "test trailer",
+            "test thumbnail", "19+",
+            isSeries = true,
+            isDeleted = false,
+            actorList = this.actorList,
+            genreList = this.genreList,
+            creatorList = this.creatorList
         )
-        this.like = Like(profile, mediaAllSeries)
+        this.like = Like(profile, mediaContents)
     }
 
     @Test
@@ -345,13 +350,13 @@ class ProfileServiceTest {
     @Test
     fun successCreateLike() {
         // given
-        val likeRequestDto = LikeRequestDto(profileId, mediaAllSeriesId)
+        val likeRequestDto = LikeRequestDto(profileId, mediaContentsId)
         every {
             profileRepository.findById(profileId)
         } returns profile
         every {
-            mediaAllSeriesRepository.findById(mediaAllSeriesId)
-        } returns mediaAllSeries
+            mediaAllSeriesRepository.findById(mediaContentsId)
+        } returns mediaContents
         every {
             likeRepository.save(any())
         } returns like
@@ -360,14 +365,14 @@ class ProfileServiceTest {
         val likeResponseDto: LikeResponseDto = profileService.createLike(likeRequestDto)
 
         // then
-        assertEquals(likeRequestDto.mediaAllSeriesId, likeResponseDto.mediaAllSeriesId)
+        assertEquals(likeRequestDto.mediaAllSeriesId, likeResponseDto.mediaContentsId)
     }
 
     @Test
     fun failCreateLike_noProfile() {
         // given
         val exception = assertThrows(BadRequestException::class.java) {
-            val likeRequestDto = LikeRequestDto(profileId, mediaAllSeriesId)
+            val likeRequestDto = LikeRequestDto(profileId, mediaContentsId)
             every {
                 profileRepository.findById(any())
             } returns null
@@ -382,12 +387,12 @@ class ProfileServiceTest {
     fun failCreateLike_noMediaAllSeries() {
         // given
         val exception = assertThrows(BadRequestException::class.java) {
-            val likeRequestDto = LikeRequestDto(profileId, mediaAllSeriesId)
+            val likeRequestDto = LikeRequestDto(profileId, mediaContentsId)
             every {
                 profileRepository.findById(profileId)
             } returns profile
             every {
-                mediaAllSeriesRepository.findById(mediaAllSeriesId)
+                mediaAllSeriesRepository.findById(mediaContentsId)
             } returns null
             // when
             profileService.createLike(likeRequestDto)
@@ -400,13 +405,13 @@ class ProfileServiceTest {
     fun failCreateLike_profileDeleted() {
         // given
         val exception = assertThrows(BadRequestException::class.java) {
-            val likeRequestDto = LikeRequestDto(profileId, mediaAllSeriesId)
+            val likeRequestDto = LikeRequestDto(profileId, mediaContentsId)
             every {
                 profileRepository.findById(profileId)
             } returns profileAlreadyDeleted
             every {
-                mediaAllSeriesRepository.findById(mediaAllSeriesId)
-            } returns mediaAllSeries
+                mediaAllSeriesRepository.findById(mediaContentsId)
+            } returns mediaContents
             // when
             profileService.createLike(likeRequestDto)
         }
@@ -417,13 +422,13 @@ class ProfileServiceTest {
     @Test
     fun successDeleteLike() {
         // given
-        val likeRequestDto = LikeRequestDto(profileId, mediaAllSeriesId)
+        val likeRequestDto = LikeRequestDto(profileId, mediaContentsId)
         every {
             profileRepository.findById(profileId)
         } returns profile
         every {
-            mediaAllSeriesRepository.findById(mediaAllSeriesId)
-        } returns mediaAllSeries
+            mediaAllSeriesRepository.findById(mediaContentsId)
+        } returns mediaContents
         every {
             likeRepository.delete(any())
         } returns like
@@ -432,14 +437,14 @@ class ProfileServiceTest {
         val likeResponseDto: LikeResponseDto = profileService.deleteLike(likeRequestDto)
 
         // then
-        assertEquals(likeRequestDto.mediaAllSeriesId, likeResponseDto.mediaAllSeriesId)
+        assertEquals(likeRequestDto.mediaAllSeriesId, likeResponseDto.mediaContentsId)
     }
 
     @Test
     fun failDeleteLike_noProfile() {
         // given
         val exception = assertThrows(BadRequestException::class.java) {
-            val likeRequestDto = LikeRequestDto(profileId, mediaAllSeriesId)
+            val likeRequestDto = LikeRequestDto(profileId, mediaContentsId)
             every {
                 profileRepository.findById(any())
             } returns null
@@ -454,12 +459,12 @@ class ProfileServiceTest {
     fun failDeleteLike_noMediaAllSeries() {
         // given
         val exception = assertThrows(BadRequestException::class.java) {
-            val likeRequestDto = LikeRequestDto(profileId, mediaAllSeriesId)
+            val likeRequestDto = LikeRequestDto(profileId, mediaContentsId)
             every {
                 profileRepository.findById(profileId)
             } returns profile
             every {
-                mediaAllSeriesRepository.findById(mediaAllSeriesId)
+                mediaAllSeriesRepository.findById(mediaContentsId)
             } returns null
             // when
             profileService.deleteLike(likeRequestDto)
@@ -472,13 +477,13 @@ class ProfileServiceTest {
     fun failDeleteLike_profileDeleted() {
         // given
         val exception = assertThrows(BadRequestException::class.java) {
-            val likeRequestDto = LikeRequestDto(profileId, mediaAllSeriesId)
+            val likeRequestDto = LikeRequestDto(profileId, mediaContentsId)
             every {
                 profileRepository.findById(profileId)
             } returns profileAlreadyDeleted
             every {
-                mediaAllSeriesRepository.findById(mediaAllSeriesId)
-            } returns mediaAllSeries
+                mediaAllSeriesRepository.findById(mediaContentsId)
+            } returns mediaContents
             // when
             profileService.deleteLike(likeRequestDto)
         }

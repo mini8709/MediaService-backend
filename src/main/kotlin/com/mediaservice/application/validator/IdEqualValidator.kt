@@ -4,12 +4,12 @@ import com.mediaservice.exception.ErrorCode
 import com.mediaservice.exception.UnauthorizedException
 import java.util.UUID
 
-class UserEqualValidator(
-    private val srcUserId: UUID,
-    private val dstUserId: UUID
+class IdEqualValidator(
+    private val srcId: UUID,
+    private val dstId: UUID
 ) : Validator() {
     override fun validate() {
-        if (this.srcUserId != this.dstUserId) {
+        if (this.srcId != this.dstId) {
             throw UnauthorizedException(ErrorCode.NOT_ACCESSIBLE, "NO PERMISSION")
         }
 

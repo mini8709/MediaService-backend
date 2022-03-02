@@ -1,15 +1,14 @@
 package com.mediaservice.application
 
-import com.mediaservice.application.dto.media.MediaAllSeriesResponseDto
-import com.mediaservice.application.dto.media.MediaDetailRequestDto
-import com.mediaservice.application.dto.media.MediaDetailResponseDto
+import com.mediaservice.application.dto.media.MediaContentsResponseDto
 import com.mediaservice.application.dto.media.MediaSeriesResponseDto
+import com.mediaservice.application.validator.IdEqualValidator
 import com.mediaservice.application.validator.IsDeletedValidator
 import com.mediaservice.application.validator.RateMatchValidator
 import com.mediaservice.domain.Like
 import com.mediaservice.domain.Profile
 import com.mediaservice.domain.repository.LikeRepository
-import com.mediaservice.domain.repository.MediaAllSeriesRepository
+import com.mediaservice.domain.repository.MediaContentsRepository
 import com.mediaservice.domain.repository.MediaRepository
 import com.mediaservice.domain.repository.MediaSeriesRepository
 import com.mediaservice.domain.repository.ProfileRepository
@@ -20,15 +19,29 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Service
-class MediaSeriesService(
+class MediaContentsService(
     private val mediaRepository: MediaRepository,
     private val mediaSeriesRepository: MediaSeriesRepository,
-    private val mediaAllSeriesRepository: MediaAllSeriesRepository,
+    private val mediaContentsRepository: MediaContentsRepository,
     private val profileRepository: ProfileRepository,
     private val likeRepository: LikeRepository
 ) {
     @Transactional(readOnly = true)
-    fun findMediaSeriesById(id: UUID): MediaSeriesResponseDto {
+    fun findMediaSeriesById(
+        userId: UUID,
+        profileId: UUID,
+        id: UUID
+    ): MediaSeriesResponseDto {
+        val profile = this.profileRepository.findById(profileId)
+            ?: throw BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                "NO SUCH PROFILE $profileId"
+            )
+
+        val validator = IsDeletedValidator(profile.isDeleted, Profile.DOMAIN)
+        validator.linkWith(IdEqualValidator(userId, profile.user.id!!))
+        validator.validate()
+
         return MediaSeriesResponseDto.from(
             this.mediaSeriesRepository.findById(id) ?: throw BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
@@ -38,40 +51,34 @@ class MediaSeriesService(
     }
 
     @Transactional(readOnly = true)
-    fun findMediaAllSeriesById(id: UUID): MediaAllSeriesResponseDto {
-        return MediaAllSeriesResponseDto.from(
-            this.mediaAllSeriesRepository.findById(id) ?: throw BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                "NO SUCH MEDIA ALL SERIES $id"
-            )
-        )
-    }
-
-    @Transactional(readOnly = true)
-    fun findDetail(mediaDetailRequestDto: MediaDetailRequestDto): MediaDetailResponseDto {
-        val profile = this.profileRepository.findById(mediaDetailRequestDto.profileId)
+    fun findMediaContentsById(
+        userId: UUID,
+        profileId: UUID,
+        mediaContentsId: UUID
+    ): MediaContentsResponseDto {
+        val profile = this.profileRepository.findById(profileId)
             ?: throw BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
-                "NO SUCH PROFILE ${mediaDetailRequestDto.profileId}"
+                "NO SUCH PROFILE $profileId"
             )
 
         val validator = IsDeletedValidator(profile.isDeleted, Profile.DOMAIN)
 
-        val mediaAllSeries = this.mediaAllSeriesRepository.findById(mediaDetailRequestDto.mediaAllSeriesId)
+        val mediaContents = this.mediaContentsRepository.findById(mediaContentsId)
             ?: throw BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
-                "NO SUCH MEDIA ALL SERIES ${mediaDetailRequestDto.mediaAllSeriesId}"
+                "NO SUCH MEDIA CONTENTS $mediaContentsId"
             )
 
-        val rateMatchValidator = RateMatchValidator(profile.rate, mediaAllSeries.rate)
-
-        validator.linkWith(rateMatchValidator)
+        validator
+            .linkWith(RateMatchValidator(profile.rate, mediaContents.rate))
+            .linkWith(IdEqualValidator(userId, profile.user.id!!))
         validator.validate()
 
-        val mediaSeriesList = this.mediaSeriesRepository.findByMediaAllSeriesId(mediaAllSeries.id)
+        val mediaSeriesList = this.mediaSeriesRepository.findByMediaAllSeriesId(mediaContents.id)
             ?: throw BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
-                "NO SUCH MEDIA SERIES LIST WITH MEDIA ALL SERIES ${mediaAllSeries.id}"
+                "NO SUCH MEDIA SERIES LIST WITH MEDIA CONTENTS ${mediaContents.id}"
             )
 
         val mediaList = this.mediaRepository.findByMediaSeriesId(mediaSeriesList[0].id)
@@ -80,8 +87,8 @@ class MediaSeriesService(
                 "NO SUCH MEDIA LIST WITH MEDIA SERIES ${mediaSeriesList[0].id}"
             )
 
-        val isLike = this.likeRepository.isExist(Like.of(profile, mediaAllSeries))
+        val isLike = this.likeRepository.isExist(Like.of(profile, mediaContents))
 
-        return MediaDetailResponseDto.from(mediaAllSeries, mediaSeriesList, mediaList, isLike)
+        return MediaContentsResponseDto.from(mediaContents, mediaSeriesList, mediaList, isLike)
     }
 }

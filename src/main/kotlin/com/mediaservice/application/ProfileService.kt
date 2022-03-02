@@ -6,14 +6,14 @@ import com.mediaservice.application.dto.user.ProfileCreateRequestDto
 import com.mediaservice.application.dto.user.ProfileResponseDto
 import com.mediaservice.application.dto.user.ProfileUpdateRequestDto
 import com.mediaservice.application.dto.user.SignInProfileResponseDto
+import com.mediaservice.application.validator.IdEqualValidator
 import com.mediaservice.application.validator.IsDeletedValidator
 import com.mediaservice.application.validator.ProfileNumberValidator
-import com.mediaservice.application.validator.UserEqualValidator
 import com.mediaservice.application.validator.Validator
 import com.mediaservice.domain.Like
 import com.mediaservice.domain.Profile
 import com.mediaservice.domain.repository.LikeRepository
-import com.mediaservice.domain.repository.MediaAllSeriesRepository
+import com.mediaservice.domain.repository.MediaContentsRepository
 import com.mediaservice.domain.repository.ProfileRepository
 import com.mediaservice.domain.repository.UserRepository
 import com.mediaservice.exception.BadRequestException
@@ -26,7 +26,7 @@ import java.util.UUID
 class ProfileService(
     private val profileRepository: ProfileRepository,
     private val userRepository: UserRepository,
-    private val mediaAllSeriesRepository: MediaAllSeriesRepository,
+    private val mediaContentsRepository: MediaContentsRepository,
     private val likeRepository: LikeRepository
 ) {
     @Transactional(readOnly = true)
@@ -81,7 +81,7 @@ class ProfileService(
         )
 
         val validator = IsDeletedValidator(profileForDelete.isDeleted, Profile.DOMAIN)
-        validator.linkWith(UserEqualValidator(user.id!!, profileForDelete.user.id!!))
+        validator.linkWith(IdEqualValidator(user.id!!, profileForDelete.user.id!!))
         validator.validate()
 
         return ProfileResponseDto.from(
@@ -107,7 +107,7 @@ class ProfileService(
         )
 
         val validator: Validator = IsDeletedValidator(profileForUpdate.isDeleted, Profile.DOMAIN)
-        validator.linkWith(UserEqualValidator(user.id!!, profileForUpdate.user.id!!))
+        validator.linkWith(IdEqualValidator(user.id!!, profileForUpdate.user.id!!))
         validator.validate()
 
         profileForUpdate.update(profileUpdateRequestDto.name, profileUpdateRequestDto.mainImage, profileUpdateRequestDto.rate)
@@ -131,7 +131,7 @@ class ProfileService(
                 "NO SUCH PROFILE ${likeRequestDto.profileId}"
             )
 
-        val mediaAllSeries = this.mediaAllSeriesRepository.findById(likeRequestDto.mediaAllSeriesId)
+        val mediaAllSeries = this.mediaContentsRepository.findById(likeRequestDto.mediaAllSeriesId)
             ?: throw BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
                 "NO SUCH MEDIA ALL SERIES ${likeRequestDto.mediaAllSeriesId}"
@@ -155,7 +155,7 @@ class ProfileService(
                 "NO SUCH PROFILE ${likeRequestDto.profileId}"
             )
 
-        val mediaAllSeries = this.mediaAllSeriesRepository.findById(likeRequestDto.mediaAllSeriesId)
+        val mediaAllSeries = this.mediaContentsRepository.findById(likeRequestDto.mediaAllSeriesId)
             ?: throw BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
                 "NO SUCH MEDIA ALL SERIES ${likeRequestDto.mediaAllSeriesId}"

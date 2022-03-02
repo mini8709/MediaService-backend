@@ -5,12 +5,12 @@ import java.util.UUID
 
 data class LikeResponseDto(
     val profileId: UUID,
-    val mediaAllSeriesId: UUID
+    val mediaContentsId: UUID
 ) {
     companion object {
         fun from(like: Like) = LikeResponseDto(
             profileId = like.profile.id!!,
-            mediaAllSeriesId = like.mediaAllSeries.id
+            mediaContentsId = like.mediaContents.id
         )
     }
 }

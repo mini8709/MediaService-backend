@@ -13,7 +13,7 @@ class LikeRepository {
     fun save(like: Like): Like {
         LikeTable.insert {
             it[profile] = like.profile.id
-            it[mediaAllSeries] = like.mediaAllSeries.id
+            it[mediaContents] = like.mediaContents.id
         }
 
         return like
@@ -21,7 +21,7 @@ class LikeRepository {
 
     fun delete(like: Like): Like {
         LikeTable.deleteWhere {
-            LikeTable.profile eq like.profile.id and (LikeTable.mediaAllSeries eq like.mediaAllSeries.id)
+            LikeTable.profile eq like.profile.id and (LikeTable.mediaContents eq like.mediaContents.id)
         }
 
         return like
@@ -29,7 +29,7 @@ class LikeRepository {
 
     fun isExist(like: Like): Boolean {
         val count = LikeTable.select {
-            LikeTable.profile eq like.profile.id and (LikeTable.mediaAllSeries eq like.mediaAllSeries.id)
+            LikeTable.profile eq like.profile.id and (LikeTable.mediaContents eq like.mediaContents.id)
         }.count()
 
         return count != 0L

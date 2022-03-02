@@ -1,19 +1,17 @@
 package com.mediaservice
 
-import com.mediaservice.application.MediaSeriesService
-import com.mediaservice.application.dto.media.MediaAllSeriesResponseDto
-import com.mediaservice.application.dto.media.MediaDetailRequestDto
+import com.mediaservice.application.MediaContentsService
 import com.mediaservice.domain.Actor
 import com.mediaservice.domain.Creator
 import com.mediaservice.domain.Genre
 import com.mediaservice.domain.Media
-import com.mediaservice.domain.MediaAllSeries
+import com.mediaservice.domain.MediaContents
 import com.mediaservice.domain.MediaSeries
 import com.mediaservice.domain.Profile
 import com.mediaservice.domain.Role
 import com.mediaservice.domain.User
 import com.mediaservice.domain.repository.LikeRepository
-import com.mediaservice.domain.repository.MediaAllSeriesRepository
+import com.mediaservice.domain.repository.MediaContentsRepository
 import com.mediaservice.domain.repository.MediaRepository
 import com.mediaservice.domain.repository.MediaSeriesRepository
 import com.mediaservice.domain.repository.ProfileRepository
@@ -28,30 +26,30 @@ import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class MediaSeriesServiceTest {
+class MediaContentsServiceTest {
     private var mediaRepository = mockk<MediaRepository>()
     private var mediaSeriesRepository = mockk<MediaSeriesRepository>()
-    private var mediaAllSeriesRepository = mockk<MediaAllSeriesRepository>()
+    private var mediaContentsRepository = mockk<MediaContentsRepository>()
     private var profileRepository = mockk<ProfileRepository>()
     private var likeRepository = mockk<LikeRepository>()
-    private val mediaSeriesService: MediaSeriesService =
-        MediaSeriesService(
-            this.mediaRepository, this.mediaSeriesRepository, this.mediaAllSeriesRepository,
+    private val mediaContentsService: MediaContentsService =
+        MediaContentsService(
+            this.mediaRepository, this.mediaSeriesRepository, this.mediaContentsRepository,
             this.profileRepository, this.likeRepository
         )
     private lateinit var media: Media
     private lateinit var mediaSeries: MediaSeries
-    private lateinit var mediaAllSeries: MediaAllSeries
-    private lateinit var mediaAllSeriesNoActor: MediaAllSeries
-    private lateinit var mediaAllSeriesNoGenre: MediaAllSeries
-    private lateinit var mediaAllSeriesNoCreator: MediaAllSeries
+    private lateinit var mediaContents: MediaContents
+    private lateinit var mediaContentsNoActor: MediaContents
+    private lateinit var mediaContentsNoGenre: MediaContents
+    private lateinit var mediaContentsNoCreator: MediaContents
     private lateinit var user: User
     private lateinit var profile: Profile
     private lateinit var deletedProfile: Profile
     private lateinit var lowRateProfile: Profile
     private lateinit var mediaId: UUID
     private lateinit var mediaSeriesId: UUID
-    private lateinit var mediaAllSeriesId: UUID
+    private lateinit var mediaContentsId: UUID
     private lateinit var userId: UUID
     private lateinit var profileId: UUID
     private lateinit var actorList: List<Actor>
@@ -63,7 +61,7 @@ class MediaSeriesServiceTest {
         clearAllMocks()
         this.mediaId = UUID.randomUUID()
         this.mediaSeriesId = UUID.randomUUID()
-        this.mediaAllSeriesId = UUID.randomUUID()
+        this.mediaContentsId = UUID.randomUUID()
         this.userId = UUID.randomUUID()
         this.profileId = UUID.randomUUID()
         this.actorList = listOf(Actor(UUID.randomUUID(), "testActor", false))
@@ -73,24 +71,40 @@ class MediaSeriesServiceTest {
         this.profile = Profile(profileId, this.user, "test profile", "19+", "test.jpg", false)
         this.deletedProfile = Profile(profileId, this.user, "test profile", "19+", "test.jpg", true)
         this.lowRateProfile = Profile(profileId, this.user, "test profile", "15+", "test.jpg", false)
-        this.mediaAllSeries = MediaAllSeries(
-            mediaAllSeriesId, "test title", "test synopsis", "test trailer",
-            "test thumbnail url", "19+", true, false, this.actorList, this.genreList, this.creatorList
+        this.mediaContents = MediaContents(
+            mediaContentsId, "test title", "test synopsis", "test trailer",
+            "test thumbnail url", "19+", true,
+            isDeleted = false,
+            actorList = this.actorList,
+            genreList = this.genreList,
+            creatorList = this.creatorList
         )
-        this.mediaAllSeriesNoActor = MediaAllSeries(
-            mediaAllSeriesId, "test title", "test synopsis", "test trailer",
-            "test thumbnail url", "19+", true, false, null, this.genreList, this.creatorList
+        this.mediaContentsNoActor = MediaContents(
+            mediaContentsId, "test title", "test synopsis", "test trailer",
+            "test thumbnail url", "19+", true,
+            isDeleted = false,
+            actorList = null,
+            genreList = this.genreList,
+            creatorList = this.creatorList
         )
-        this.mediaAllSeriesNoGenre = MediaAllSeries(
-            mediaAllSeriesId, "test title", "test synopsis", "test trailer",
-            "test thumbnail url", "19+", true, false, this.actorList, null, this.creatorList
+        this.mediaContentsNoGenre = MediaContents(
+            mediaContentsId, "test title", "test synopsis", "test trailer",
+            "test thumbnail url", "19+", true,
+            isDeleted = false,
+            actorList = this.actorList,
+            genreList = null,
+            creatorList = this.creatorList
         )
-        this.mediaAllSeriesNoCreator = MediaAllSeries(
-            mediaAllSeriesId, "test title", "test synopsis", "test trailer",
-            "test thumbnail url", "19+", true, false, this.actorList, this.genreList, null
+        this.mediaContentsNoCreator = MediaContents(
+            mediaContentsId, "test title", "test synopsis", "test trailer",
+            "test thumbnail url", "19+", true,
+            isDeleted = false,
+            actorList = this.actorList,
+            genreList = this.genreList,
+            creatorList = null
         )
         this.mediaSeries = MediaSeries(
-            mediaSeriesId, "season 1", 1, false, this.mediaAllSeries
+            mediaSeriesId, "season 1", 1, false, this.mediaContents
         )
         this.media = Media(
             mediaId, "test video 1", "test synopsis", 1, "test url",
@@ -102,9 +116,10 @@ class MediaSeriesServiceTest {
     fun successFindMediaSeriesById() {
         // given
         every { mediaSeriesRepository.findById(mediaSeriesId) } returns this.mediaSeries
+        every { profileRepository.findById(profileId) } returns this.profile
 
         // when
-        val mediaSeriesResponseDto = this.mediaSeriesService.findMediaSeriesById(this.mediaSeriesId)
+        val mediaSeriesResponseDto = this.mediaContentsService.findMediaSeriesById(this.userId, this.profileId, this.mediaSeriesId)
 
         // then
         assertEquals(this.mediaSeries.title, mediaSeriesResponseDto.title)
@@ -115,9 +130,10 @@ class MediaSeriesServiceTest {
         val exception = assertThrows(BadRequestException::class.java) {
             // given
             every { mediaSeriesRepository.findById(mediaSeriesId) } returns null
+            every { profileRepository.findById(profileId) } returns this.profile
 
             // when
-            this.mediaSeriesService.findMediaSeriesById(this.mediaSeriesId)
+            this.mediaContentsService.findMediaSeriesById(this.userId, this.profileId, this.mediaSeriesId)
         }
 
         // then
@@ -125,43 +141,14 @@ class MediaSeriesServiceTest {
     }
 
     @Test
-    fun successFindMediaAllSeriesById() {
+    fun successFindMediaContentsById() {
         // given
-        every { mediaAllSeriesRepository.findById(mediaAllSeriesId) } returns this.mediaAllSeries
-
-        // when
-        val mediaAllSeriesResponseDto: MediaAllSeriesResponseDto =
-            this.mediaSeriesService.findMediaAllSeriesById(this.mediaAllSeriesId)
-
-        // then
-        assertEquals(this.mediaAllSeries.title, mediaAllSeriesResponseDto.title)
-    }
-
-    @Test
-    fun failFindById() {
-        val exception = assertThrows(BadRequestException::class.java) {
-            // given
-            every { mediaAllSeriesRepository.findById(mediaAllSeriesId) } returns null
-
-            // when
-            this.mediaSeriesService.findMediaAllSeriesById(this.mediaAllSeriesId)
-        }
-
-        // then
-        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
-    }
-
-    @Test
-    fun successFindDetail() {
-        // given
-        val mediaDetailRequestDto = MediaDetailRequestDto(mediaAllSeriesId, profileId)
-
         every {
-            profileRepository.findById(mediaDetailRequestDto.profileId)
+            profileRepository.findById(profileId)
         } returns this.profile
         every {
-            mediaAllSeriesRepository.findById(mediaDetailRequestDto.mediaAllSeriesId)
-        } returns this.mediaAllSeries
+            mediaContentsRepository.findById(mediaContentsId)
+        } returns this.mediaContents
         every {
             mediaSeriesRepository.findByMediaAllSeriesId(any())
         } returns listOf(this.mediaSeries)
@@ -173,26 +160,25 @@ class MediaSeriesServiceTest {
         } returns false
 
         // when
-        val mediaDetailResponseDto = mediaSeriesService.findDetail(mediaDetailRequestDto)
+        val mediaContentsResponseDto = mediaContentsService.findMediaContentsById(this.userId, this.profileId, this.mediaContentsId)
 
         // then
-        assertEquals(mediaDetailRequestDto.mediaAllSeriesId, mediaDetailResponseDto.mediaAllSeriesResponseDto.id)
+        assertEquals(this.mediaContentsId, mediaContentsResponseDto.id)
     }
 
     @Test
     fun failFindDetail_DeletedProfile() {
         val exception = assertThrows(BadRequestException::class.java) {
             // given
-            val mediaDetailRequestDto = MediaDetailRequestDto(mediaAllSeriesId, profileId)
             every {
-                profileRepository.findById(mediaDetailRequestDto.profileId)
+                profileRepository.findById(profileId)
             } returns deletedProfile
             every {
-                mediaAllSeriesRepository.findById(mediaDetailRequestDto.mediaAllSeriesId)
-            } returns this.mediaAllSeries
+                mediaContentsRepository.findById(mediaContentsId)
+            } returns this.mediaContents
 
             // when
-            val mediaDetailResponseDto = mediaSeriesService.findDetail(mediaDetailRequestDto)
+            mediaContentsService.findMediaContentsById(this.userId, this.profileId, this.mediaContentsId)
         }
 
         // then
@@ -203,16 +189,15 @@ class MediaSeriesServiceTest {
     fun failFindDetail_NoMediaAllSeries() {
         val exception = assertThrows(BadRequestException::class.java) {
             // given
-            val mediaDetailRequestDto = MediaDetailRequestDto(mediaAllSeriesId, profileId)
             every {
-                profileRepository.findById(mediaDetailRequestDto.profileId)
+                profileRepository.findById(profileId)
             } returns profile
             every {
-                mediaAllSeriesRepository.findById(mediaDetailRequestDto.mediaAllSeriesId)
+                mediaContentsRepository.findById(mediaContentsId)
             } returns null
 
             // when
-            val mediaDetailResponseDto = mediaSeriesService.findDetail(mediaDetailRequestDto)
+            mediaContentsService.findMediaContentsById(this.userId, this.profileId, this.mediaContentsId)
         }
 
         // then
@@ -223,16 +208,15 @@ class MediaSeriesServiceTest {
     fun failFindDetail_RateNotMatch() {
         val exception = assertThrows(BadRequestException::class.java) {
             // given
-            val mediaDetailRequestDto = MediaDetailRequestDto(mediaAllSeriesId, profileId)
             every {
-                profileRepository.findById(mediaDetailRequestDto.profileId)
+                profileRepository.findById(profileId)
             } returns lowRateProfile
             every {
-                mediaAllSeriesRepository.findById(mediaDetailRequestDto.mediaAllSeriesId)
-            } returns this.mediaAllSeries
+                mediaContentsRepository.findById(mediaContentsId)
+            } returns this.mediaContents
 
             // when
-            val mediaDetailResponseDto = mediaSeriesService.findDetail(mediaDetailRequestDto)
+            mediaContentsService.findMediaContentsById(this.userId, this.profileId, this.mediaContentsId)
         }
         assertEquals(ErrorCode.RATE_NOT_MATCHED, exception.errorCode)
     }
@@ -241,20 +225,18 @@ class MediaSeriesServiceTest {
     fun failFindDetail_NoMediaSeriesList() {
         val exception = assertThrows(BadRequestException::class.java) {
             // given
-            val mediaDetailRequestDto = MediaDetailRequestDto(mediaAllSeriesId, profileId)
-
             every {
-                profileRepository.findById(mediaDetailRequestDto.profileId)
+                profileRepository.findById(profileId)
             } returns this.profile
             every {
-                mediaAllSeriesRepository.findById(mediaDetailRequestDto.mediaAllSeriesId)
-            } returns this.mediaAllSeries
+                mediaContentsRepository.findById(mediaContentsId)
+            } returns this.mediaContents
             every {
                 mediaSeriesRepository.findByMediaAllSeriesId(any())
             } returns null
 
             // when
-            val mediaDetailResponseDto = mediaSeriesService.findDetail(mediaDetailRequestDto)
+            mediaContentsService.findMediaContentsById(this.userId, this.profileId, this.mediaContentsId)
         }
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
     }
@@ -263,14 +245,12 @@ class MediaSeriesServiceTest {
     fun failFindDetail_NoMediaList() {
         val exception = assertThrows(BadRequestException::class.java) {
             // given
-            val mediaDetailRequestDto = MediaDetailRequestDto(mediaAllSeriesId, profileId)
-
             every {
-                profileRepository.findById(mediaDetailRequestDto.profileId)
+                profileRepository.findById(profileId)
             } returns this.profile
             every {
-                mediaAllSeriesRepository.findById(mediaDetailRequestDto.mediaAllSeriesId)
-            } returns this.mediaAllSeries
+                mediaContentsRepository.findById(mediaContentsId)
+            } returns this.mediaContents
             every {
                 mediaSeriesRepository.findByMediaAllSeriesId(any())
             } returns listOf(this.mediaSeries)
@@ -279,7 +259,8 @@ class MediaSeriesServiceTest {
             } returns null
 
             // when
-            val mediaDetailResponseDto = mediaSeriesService.findDetail(mediaDetailRequestDto)
+            mediaContentsService.findMediaContentsById(this.userId, this.profileId, this.mediaContentsId)
         }
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
     }
 }

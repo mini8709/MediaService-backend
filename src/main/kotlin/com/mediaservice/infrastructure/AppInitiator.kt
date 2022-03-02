@@ -7,7 +7,7 @@ import com.mediaservice.domain.LikeTable
 import com.mediaservice.domain.MediaAllSeriesActorTable
 import com.mediaservice.domain.MediaAllSeriesCreatorTable
 import com.mediaservice.domain.MediaAllSeriesGenreTable
-import com.mediaservice.domain.MediaAllSeriesTable
+import com.mediaservice.domain.MediaContentsTable
 import com.mediaservice.domain.MediaSeriesTable
 import com.mediaservice.domain.MediaTable
 import com.mediaservice.domain.ProfileTable
@@ -25,12 +25,12 @@ class AppInitiator {
         fun localInit() {
             transaction {
                 SchemaUtils.drop(
-                    UserTable, ProfileTable, MediaTable, MediaSeriesTable, MediaAllSeriesTable,
+                    UserTable, ProfileTable, MediaTable, MediaSeriesTable, MediaContentsTable,
                     ActorTable, CreatorTable, GenreTable, MediaAllSeriesActorTable, MediaAllSeriesGenreTable,
                     MediaAllSeriesCreatorTable, LikeTable
                 )
                 SchemaUtils.create(
-                    UserTable, ProfileTable, MediaTable, MediaSeriesTable, MediaAllSeriesTable,
+                    UserTable, ProfileTable, MediaTable, MediaSeriesTable, MediaContentsTable,
                     ActorTable, CreatorTable, GenreTable, MediaAllSeriesActorTable, MediaAllSeriesGenreTable,
                     MediaAllSeriesCreatorTable, LikeTable
                 )
@@ -41,7 +41,7 @@ class AppInitiator {
                     it[role] = Role.ADMIN
                 }
 
-                var userIds = ArrayList<UUID>()
+                val userIds = ArrayList<UUID>()
                 for (i in 1..5) {
                     userIds.add(
                         UserTable.insertAndGetId {
@@ -64,10 +64,10 @@ class AppInitiator {
                     }
                 }
 
-                var mediaAllSeriesIds = ArrayList<UUID>()
+                val mediaContentsIds = ArrayList<UUID>()
                 for (i in 1..15) {
-                    mediaAllSeriesIds.add(
-                        MediaAllSeriesTable.insertAndGetId {
+                    mediaContentsIds.add(
+                        MediaContentsTable.insertAndGetId {
                             it[title] = "전체 미디어 ${i}의 타이틀"
                             it[synopsis] = "전체 미디어 ${i}의 시놉시스"
                             it[trailer] = "전체 미디어 ${i}의 트레일러"
@@ -79,7 +79,7 @@ class AppInitiator {
                     )
                 }
 
-                var mediaSeriesIds = ArrayList<UUID>()
+                val mediaSeriesIds = ArrayList<UUID>()
                 for (i in 1..15) {
                     for (j in 1..2) {
                         mediaSeriesIds.add(
@@ -87,7 +87,7 @@ class AppInitiator {
                                 it[title] = "전체 미디어 ${i}의 시즌 $j"
                                 it[order] = j
                                 it[isDeleted] = false
-                                it[mediaAllSeries] = mediaAllSeriesIds[i - 1]
+                                it[mediaContents] = mediaContentsIds[i - 1]
                             }.value
                         )
                     }
@@ -110,12 +110,12 @@ class AppInitiator {
                     }
                 }
 
-                val genreData = listOf<String>(
+                val genreData = listOf(
                     "로맨스", "판타지", "스릴러", "코미디", "SF",
                     "공포", "미스터리", "애니메이션"
                 )
 
-                var genreIds = ArrayList<UUID>()
+                val genreIds = ArrayList<UUID>()
                 for (i in genreData) {
                     genreIds.add(
                         GenreTable.insertAndGetId {
@@ -125,12 +125,12 @@ class AppInitiator {
                     )
                 }
 
-                val actorData = listOf<String>(
+                val actorData = listOf(
                     "고광표", "김민하", "김영민", "배진우", "우창혁",
                     "유동필", "이민수"
                 )
 
-                var actorIds = ArrayList<UUID>()
+                val actorIds = ArrayList<UUID>()
                 for (i in actorData) {
                     actorIds.add(
                         ActorTable.insertAndGetId {
@@ -140,11 +140,11 @@ class AppInitiator {
                     )
                 }
 
-                val creatorData = listOf<String>(
+                val creatorData = listOf(
                     "봉준호", "스필버그", "박찬욱", "홍상수", "이병헌"
                 )
 
-                var creatorIds = ArrayList<UUID>()
+                val creatorIds = ArrayList<UUID>()
                 for (i in creatorData) {
                     creatorIds.add(
                         CreatorTable.insertAndGetId {
@@ -154,7 +154,7 @@ class AppInitiator {
                     )
                 }
 
-                for ((i, v) in mediaAllSeriesIds.withIndex()) {
+                for ((i, v) in mediaContentsIds.withIndex()) {
                     val actorList = List(3) {
                         actorIds.random()
                     }.toSet().toList()
@@ -179,7 +179,7 @@ class AppInitiator {
 
                     MediaAllSeriesCreatorTable.insert {
                         it[mediaAllSeries] = v
-                        it[creator] = creatorIds.get(i % creatorIds.size)
+                        it[creator] = creatorIds[i % creatorIds.size]
                     }
                 }
             }

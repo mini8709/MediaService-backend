@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-@RequestMapping("/api/v1/genre")
+@RequestMapping("/api/v1/genres")
 class GenreController(private val genreService: GenreService) {
     @PostMapping("")
     fun create(

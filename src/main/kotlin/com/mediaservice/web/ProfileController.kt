@@ -26,9 +26,9 @@ class ProfileController(private val profileService: ProfileService) {
         return this.profileService.findById(id)
     }
 
-    @GetMapping("/sign-in/{id}")
-    fun findByUserId(@PathVariable id: UUID): List<SignInProfileResponseDto> {
-        return this.profileService.findByUserId(id)
+    @PostMapping("/sign-in")
+    fun findByUserId(@AuthenticationPrincipal id: String): List<SignInProfileResponseDto> {
+        return this.profileService.findByUserId(UUID.fromString(id))
     }
 
     @PostMapping

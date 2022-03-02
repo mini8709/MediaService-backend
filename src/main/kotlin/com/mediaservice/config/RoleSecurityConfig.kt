@@ -12,11 +12,9 @@ class RoleSecurityConfig(
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint
 ) : WebMvcConfigurer {
     private val urlPatterns = arrayListOf(
-        "/api/v1/actor",
-        "/api/v1/creator",
-        "/api/v1/genre",
-        "/api/v1/media",
-        "/api/v1/media-series"
+        "/api/v1/actors",
+        "/api/v1/creators",
+        "/api/v1/genres"
     )
 
     @Bean

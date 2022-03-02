@@ -8,7 +8,6 @@ import com.mediaservice.application.dto.user.SignUpRequestDto
 import com.mediaservice.application.dto.user.SignUpVerifyAuthRequestDto
 import com.mediaservice.application.dto.user.SignUpVerifyMailRequestDto
 import com.mediaservice.application.dto.user.UserResponseDto
-import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -17,12 +16,12 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v1/auth")
 class AuthController(private val userService: UserService) {
-    @GetMapping("/verify-mail")
+    @PostMapping("/verify-mail")
     fun signUpVerifyMail(@RequestBody signUpVerifyMailRequestDto: SignUpVerifyMailRequestDto): String {
         return this.userService.signUpVerifyMail(signUpVerifyMailRequestDto)
     }
 
-    @GetMapping("/verify-auth")
+    @PostMapping("/verify-auth")
     fun signUpVerifyAuth(@RequestBody signUpVerifyAuthRequestDto: SignUpVerifyAuthRequestDto) {
         return this.userService.signUpVerifyAuth(signUpVerifyAuthRequestDto)
     }
