@@ -46,4 +46,22 @@ class ActorService(
             )
         )
     }
+
+    @Transactional
+    fun delete(id: UUID): ActorResponseDto {
+        val actorForUpdate = this.actorRepository.findById(id) ?: throw BadRequestException(
+            ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH ACTOR $id"
+        )
+
+        val validator: Validator = IsDeletedValidator(actorForUpdate.isDeleted, Actor.DOMAIN)
+        validator.validate()
+
+        return ActorResponseDto.from(
+            this.actorRepository.delete(
+                id
+            ) ?: throw BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH ACTOR $id"
+            )
+        )
+    }
 }

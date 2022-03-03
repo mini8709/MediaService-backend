@@ -26,6 +26,7 @@ class ActorServiceTest {
     private lateinit var adminId: UUID
     private lateinit var userId: UUID
     private lateinit var actor: Actor
+    private lateinit var updatedActor: Actor
     private lateinit var deletedActor: Actor
     private lateinit var admin: User
     private lateinit var user: User
@@ -37,6 +38,7 @@ class ActorServiceTest {
         this.adminId = UUID.randomUUID()
         this.userId = UUID.randomUUID()
         this.actor = Actor(this.actorId, "test Actor", isDeleted = false)
+        this.updatedActor = Actor(this.actorId, "update Actor", isDeleted = false)
         this.deletedActor = Actor(this.actorId, "test Actor", isDeleted = true)
         this.admin = User(this.adminId, "admin@gmail.com", "1234", Role.ADMIN)
         this.user = User(this.userId, "user@gmail.com", "1234", Role.USER)
@@ -61,23 +63,23 @@ class ActorServiceTest {
     @Test
     fun successUpdate() {
         // given
-        val actorUpdateRequestDto = ActorUpdateRequestDto("test Actor")
+        val actorUpdateRequestDto = ActorUpdateRequestDto("update Actor")
 
         every { actorRepository.findById(actorId) } returns this.actor
-        every { actorRepository.update(actorId, actor) } returns this.actor
+        every { actorRepository.update(actorId, actor) } returns this.updatedActor
 
         // when
         val actorResponseDto = this.actorService.update(actorId, actorUpdateRequestDto)
 
         // then
-        assertEquals(this.actor.name, actorResponseDto.name)
+        assertEquals(this.updatedActor.name, actorResponseDto.name)
     }
 
     @Test
     fun failUpdate_CannotFindActor() {
         val exception = assertThrows(BadRequestException::class.java) {
             // given
-            val actorUpdateRequestDto = ActorUpdateRequestDto("test Actor")
+            val actorUpdateRequestDto = ActorUpdateRequestDto("update Actor")
 
             every { actorRepository.findById(actorId) } returns null
 
@@ -93,12 +95,53 @@ class ActorServiceTest {
     fun failUpdate_DeletedActor() {
         val exception = assertThrows(BadRequestException::class.java) {
             // given
-            val actorUpdateRequestDto = ActorUpdateRequestDto("test Actor")
+            val actorUpdateRequestDto = ActorUpdateRequestDto("update Actor")
 
             every { actorRepository.findById(actorId) } returns this.deletedActor
 
             // when
             this.actorService.update(actorId, actorUpdateRequestDto)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)
+    }
+
+    @Test
+    fun successDelete() {
+        // given
+        every { actorRepository.findById(actorId) } returns this.actor
+        every { actorRepository.delete(actorId) } returns this.deletedActor
+
+        // when
+        val actorResponseDto = this.actorService.delete(actorId)
+
+        // then
+        assertEquals(this.deletedActor.isDeleted, true)
+    }
+
+    @Test
+    fun failDelete_CannotFindActor() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            every { actorRepository.findById(actorId) } returns null
+
+            // when
+            this.actorService.delete(actorId)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun failDelete_DeletedActor() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            every { actorRepository.findById(actorId) } returns this.deletedActor
+
+            // when
+            this.actorService.delete(actorId)
         }
 
         // then

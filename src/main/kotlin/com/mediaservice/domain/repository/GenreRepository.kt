@@ -26,4 +26,11 @@ class GenreRepository {
             return Genre.from(it)
         }
     }
+
+    fun delete(id: UUID): Genre? {
+        return GenreEntity.findById(id)?.let {
+            it.isDeleted = true
+            return Genre.from(it)
+        }
+    }
 }

@@ -26,6 +26,7 @@ class GenreServiceTest {
     private lateinit var adminId: UUID
     private lateinit var userId: UUID
     private lateinit var genre: Genre
+    private lateinit var updatedGenre: Genre
     private lateinit var deletedGenre: Genre
     private lateinit var admin: User
     private lateinit var user: User
@@ -37,6 +38,7 @@ class GenreServiceTest {
         this.adminId = UUID.randomUUID()
         this.userId = UUID.randomUUID()
         this.genre = Genre(this.genreId, "test Genre", isDeleted = false)
+        this.updatedGenre = Genre(this.genreId, "update Genre", isDeleted = false)
         this.deletedGenre = Genre(this.genreId, "test Genre", isDeleted = true)
         this.admin = User(this.adminId, "admin@gmail.com", "1234", Role.ADMIN)
         this.user = User(this.userId, "user@gmail.com", "1234", Role.USER)
@@ -61,23 +63,23 @@ class GenreServiceTest {
     @Test
     fun successUpdate() {
         // given
-        val genreUpdateRequestDto = GenreUpdateRequestDto("test Genre")
+        val genreUpdateRequestDto = GenreUpdateRequestDto("update Genre")
 
         every { genreRepository.findById(genreId) } returns this.genre
-        every { genreRepository.update(genreId, genre) } returns this.genre
+        every { genreRepository.update(genreId, genre) } returns this.updatedGenre
 
         // when
         val actorResponseDto = this.genreService.update(genreId, genreUpdateRequestDto)
 
         // then
-        assertEquals(this.genre.name, actorResponseDto.name)
+        assertEquals(this.updatedGenre.name, actorResponseDto.name)
     }
 
     @Test
     fun failUpdate_CannotFindGenre() {
         val exception = assertThrows(BadRequestException::class.java) {
             // given
-            val genreUpdateRequestDto = GenreUpdateRequestDto("test Genre")
+            val genreUpdateRequestDto = GenreUpdateRequestDto("update Genre")
 
             every { genreRepository.findById(genreId) } returns null
 
@@ -93,12 +95,53 @@ class GenreServiceTest {
     fun failUpdate_DeletedGenre() {
         val exception = assertThrows(BadRequestException::class.java) {
             // given
-            val genreUpdateRequestDto = GenreUpdateRequestDto("test Genre")
+            val genreUpdateRequestDto = GenreUpdateRequestDto("update Genre")
 
             every { genreRepository.findById(genreId) } returns this.deletedGenre
 
             // when
             this.genreService.update(genreId, genreUpdateRequestDto)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)
+    }
+
+    @Test
+    fun successDelete() {
+        // given
+        every { genreRepository.findById(genreId) } returns this.genre
+        every { genreRepository.delete(genreId) } returns this.deletedGenre
+
+        // when
+        val actorResponseDto = this.genreService.delete(genreId)
+
+        // then
+        assertEquals(this.deletedGenre.isDeleted, true)
+    }
+
+    @Test
+    fun failDelete_CannotFindGenre() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            every { genreRepository.findById(genreId) } returns null
+
+            // when
+            this.genreService.delete(genreId)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun failDelete_DeletedGenre() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            every { genreRepository.findById(genreId) } returns this.deletedGenre
+
+            // when
+            this.genreService.delete(genreId)
         }
 
         // then

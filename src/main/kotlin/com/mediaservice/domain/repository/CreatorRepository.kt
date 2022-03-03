@@ -26,4 +26,11 @@ class CreatorRepository {
             return Creator.from(it)
         }
     }
+
+    fun delete(id: UUID): Creator? {
+        return CreatorEntity.findById(id)?.let {
+            it.isDeleted = true
+            return Creator.from(it)
+        }
+    }
 }

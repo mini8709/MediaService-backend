@@ -26,4 +26,11 @@ class ActorRepository {
             return Actor.from(it)
         }
     }
+
+    fun delete(id: UUID): Actor? {
+        return ActorEntity.findById(id)?.let {
+            it.isDeleted = true
+            return Actor.from(it)
+        }
+    }
 }

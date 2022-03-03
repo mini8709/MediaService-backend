@@ -26,6 +26,7 @@ class CreatorServiceTest {
     private lateinit var adminId: UUID
     private lateinit var userId: UUID
     private lateinit var creator: Creator
+    private lateinit var updatedCreator: Creator
     private lateinit var deletedCreator: Creator
     private lateinit var admin: User
     private lateinit var user: User
@@ -37,6 +38,7 @@ class CreatorServiceTest {
         this.adminId = UUID.randomUUID()
         this.userId = UUID.randomUUID()
         this.creator = Creator(this.creatorId, "test Creator", isDeleted = false)
+        this.updatedCreator = Creator(this.creatorId, "update Creator", isDeleted = false)
         this.deletedCreator = Creator(this.creatorId, "test Creator", isDeleted = true)
         this.admin = User(this.adminId, "admin@gmail.com", "1234", Role.ADMIN)
         this.user = User(this.userId, "user@gmail.com", "1234", Role.USER)
@@ -61,23 +63,23 @@ class CreatorServiceTest {
     @Test
     fun successUpdate() {
         // given
-        val creatorUpdateRequestDto = CreatorUpdateRequestDto("test creator")
+        val creatorUpdateRequestDto = CreatorUpdateRequestDto("update creator")
 
         every { creatorRepository.findById(creatorId) } returns this.creator
-        every { creatorRepository.update(creatorId, creator) } returns this.creator
+        every { creatorRepository.update(creatorId, creator) } returns this.updatedCreator
 
         // when
         val creatorResponseDto = this.creatorService.update(creatorId, creatorUpdateRequestDto)
 
         // then
-        assertEquals(this.creator.name, creatorResponseDto.name)
+        assertEquals(this.updatedCreator.name, creatorResponseDto.name)
     }
 
     @Test
     fun failUpdate_CannotFindCreator() {
         val exception = assertThrows(BadRequestException::class.java) {
             // given
-            val creatorUpdateRequestDto = CreatorUpdateRequestDto("test Creator")
+            val creatorUpdateRequestDto = CreatorUpdateRequestDto("update Creator")
 
             every { creatorRepository.findById(creatorId) } returns null
 
@@ -93,12 +95,53 @@ class CreatorServiceTest {
     fun failUpdate_DeletedCreator() {
         val exception = assertThrows(BadRequestException::class.java) {
             // given
-            val creatorUpdateRequestDto = CreatorUpdateRequestDto("test Creator")
+            val creatorUpdateRequestDto = CreatorUpdateRequestDto("update Creator")
 
             every { creatorRepository.findById(creatorId) } returns this.deletedCreator
 
             // when
             this.creatorService.update(creatorId, creatorUpdateRequestDto)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)
+    }
+
+    @Test
+    fun successDelete() {
+        // given
+        every { creatorRepository.findById(creatorId) } returns this.creator
+        every { creatorRepository.delete(creatorId) } returns this.deletedCreator
+
+        // when
+        val creatorResponseDto = this.creatorService.delete(creatorId)
+
+        // then
+        assertEquals(this.deletedCreator.isDeleted, true)
+    }
+
+    @Test
+    fun failDelete_CannotFindCreator() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            every { creatorRepository.findById(creatorId) } returns null
+
+            // when
+            this.creatorService.delete(creatorId)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun failDelete_DeletedCreator() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            every { creatorRepository.findById(creatorId) } returns this.deletedCreator
+
+            // when
+            this.creatorService.delete(creatorId)
         }
 
         // then

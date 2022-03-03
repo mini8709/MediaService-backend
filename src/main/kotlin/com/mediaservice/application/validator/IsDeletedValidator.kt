@@ -9,7 +9,7 @@ class IsDeletedValidator(
 ) : Validator() {
     override fun validate() {
         if (this.isDeleted) {
-            throw BadRequestException(ErrorCode.ROW_ALREADY_DELETED, "Deleted " + this.target)
+            throw BadRequestException(ErrorCode.ROW_ALREADY_DELETED, "DELETED " + this.target)
         }
 
         if (this.next != null) {
