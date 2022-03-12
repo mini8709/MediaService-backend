@@ -1,6 +1,7 @@
 package com.mediaservice
 
 import com.mediaservice.application.MediaContentsService
+import com.mediaservice.application.dto.media.MediaContentsCreateRequestDto
 import com.mediaservice.domain.Actor
 import com.mediaservice.domain.Creator
 import com.mediaservice.domain.Genre
@@ -20,6 +21,7 @@ import com.mediaservice.exception.ErrorCode
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -262,5 +264,51 @@ class MediaContentsServiceTest {
             mediaContentsService.findMediaContentsById(this.userId, this.profileId, this.mediaContentsId)
         }
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun successCreateMediaContents() {
+        // given
+        mockkObject(MediaContents)
+        mockkObject(MediaSeries)
+        val mediaContentsCreateRequestDto =
+            MediaContentsCreateRequestDto(
+                "test title",
+                "test synopsis",
+                "test trailer",
+                "test thumbnail url",
+                "19+",
+                true,
+                "season 1",
+                null,
+                null,
+                null
+            )
+
+        every {
+            MediaContents.of(
+                mediaContentsCreateRequestDto.title,
+                mediaContentsCreateRequestDto.synopsis,
+                mediaContentsCreateRequestDto.trailer,
+                mediaContentsCreateRequestDto.thumbnail,
+                mediaContentsCreateRequestDto.rate,
+                mediaContentsCreateRequestDto.isSeries
+            )
+        } returns this.mediaContents
+        every {
+            MediaSeries.of(
+                mediaContentsCreateRequestDto.mediaSeriesTitle,
+                1,
+                mediaContents
+            )
+        } returns this.mediaSeries
+        every { mediaContentsRepository.save(mediaContents) } returns this.mediaContents
+        every { mediaSeriesRepository.save(mediaSeries) } returns this.mediaSeries
+
+        // when
+        val mediaContentsResponseDto = mediaContentsService.createMediaContents(mediaContentsCreateRequestDto)
+
+        // then
+        assertEquals(this.mediaContentsId, mediaContentsResponseDto.id)
     }
 }

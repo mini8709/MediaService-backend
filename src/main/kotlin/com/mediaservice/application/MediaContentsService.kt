@@ -1,11 +1,14 @@
 package com.mediaservice.application
 
+import com.mediaservice.application.dto.media.MediaContentsCreateRequestDto
 import com.mediaservice.application.dto.media.MediaContentsResponseDto
 import com.mediaservice.application.dto.media.MediaSeriesResponseDto
 import com.mediaservice.application.validator.IdEqualValidator
 import com.mediaservice.application.validator.IsDeletedValidator
 import com.mediaservice.application.validator.RateMatchValidator
 import com.mediaservice.domain.Like
+import com.mediaservice.domain.MediaContents
+import com.mediaservice.domain.MediaSeries
 import com.mediaservice.domain.Profile
 import com.mediaservice.domain.repository.LikeRepository
 import com.mediaservice.domain.repository.MediaContentsRepository
@@ -75,13 +78,13 @@ class MediaContentsService(
             .linkWith(IdEqualValidator(userId, profile.user.id!!))
         validator.validate()
 
-        val mediaSeriesList = this.mediaSeriesRepository.findByMediaAllSeriesId(mediaContents.id)
+        val mediaSeriesList = this.mediaSeriesRepository.findByMediaAllSeriesId(mediaContents.id!!)
             ?: throw BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
                 "NO SUCH MEDIA SERIES LIST WITH MEDIA CONTENTS ${mediaContents.id}"
             )
 
-        val mediaList = this.mediaRepository.findByMediaSeriesId(mediaSeriesList[0].id)
+        val mediaList = this.mediaRepository.findByMediaSeriesId(mediaSeriesList[0].id!!)
             ?: throw BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
                 "NO SUCH MEDIA LIST WITH MEDIA SERIES ${mediaSeriesList[0].id}"
@@ -90,5 +93,36 @@ class MediaContentsService(
         val isLike = this.likeRepository.isExist(Like.of(profile, mediaContents))
 
         return MediaContentsResponseDto.from(mediaContents, mediaSeriesList, mediaList, isLike)
+    }
+
+    @Transactional
+    fun createMediaContents(
+        mediaContentsCreateRequestDto: MediaContentsCreateRequestDto
+    ): MediaContentsResponseDto {
+        val mediaContents = this.mediaContentsRepository.save(
+            MediaContents.of(
+                mediaContentsCreateRequestDto.title,
+                mediaContentsCreateRequestDto.synopsis,
+                mediaContentsCreateRequestDto.trailer,
+                mediaContentsCreateRequestDto.thumbnail,
+                mediaContentsCreateRequestDto.rate,
+                mediaContentsCreateRequestDto.isSeries
+            )
+        )
+
+        val mediaSeries = this.mediaSeriesRepository.save(
+            MediaSeries.of(
+                mediaContentsCreateRequestDto.mediaSeriesTitle,
+                1,
+                mediaContents
+            )
+        )
+
+        return MediaContentsResponseDto.from(
+            mediaContents,
+            listOf(mediaSeries),
+            listOf(),
+            false
+        )
     }
 }

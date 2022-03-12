@@ -1,11 +1,14 @@
 package com.mediaservice.web
 
 import com.mediaservice.application.MediaContentsService
+import com.mediaservice.application.dto.media.MediaContentsCreateRequestDto
 import com.mediaservice.application.dto.media.MediaContentsResponseDto
 import com.mediaservice.application.dto.media.MediaSeriesResponseDto
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -37,6 +40,15 @@ class MediaContentsController(private val mediaSeriesService: MediaContentsServi
             UUID.fromString(userId),
             UUID.fromString(profileId),
             id
+        )
+    }
+
+    @PostMapping
+    fun createMediaContents(
+        @RequestBody mediaContentsCreateRequestDto: MediaContentsCreateRequestDto
+    ): MediaContentsResponseDto {
+        return this.mediaSeriesService.createMediaContents(
+            mediaContentsCreateRequestDto
         )
     }
 }

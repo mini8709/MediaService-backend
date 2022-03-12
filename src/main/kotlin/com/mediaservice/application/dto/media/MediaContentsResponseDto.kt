@@ -27,7 +27,7 @@ data class MediaContentsResponseDto(
             mediaList: List<Media>,
             isLike: Boolean
         ) = MediaContentsResponseDto(
-            id = mediaContents.id,
+            id = mediaContents.id!!,
             title = mediaContents.title,
             synopsis = mediaContents.synopsis,
             trailer = mediaContents.trailer,

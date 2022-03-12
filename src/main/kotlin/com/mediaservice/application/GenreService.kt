@@ -49,11 +49,11 @@ class GenreService(
 
     @Transactional
     fun delete(id: UUID): GenreResponseDto {
-        val actorForUpdate = this.genreRepository.findById(id) ?: throw BadRequestException(
+        val genreForUpdate = this.genreRepository.findById(id) ?: throw BadRequestException(
             ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH GENRE $id"
         )
 
-        val validator: Validator = IsDeletedValidator(actorForUpdate.isDeleted, Genre.DOMAIN)
+        val validator: Validator = IsDeletedValidator(genreForUpdate.isDeleted, Genre.DOMAIN)
         validator.validate()
 
         return GenreResponseDto.from(

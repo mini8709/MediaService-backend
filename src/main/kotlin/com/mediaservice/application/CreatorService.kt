@@ -48,11 +48,11 @@ class CreatorService(
 
     @Transactional
     fun delete(id: UUID): CreatorResponseDto {
-        val actorForUpdate = this.creatorRepository.findById(id) ?: throw BadRequestException(
+        val creatorForUpdate = this.creatorRepository.findById(id) ?: throw BadRequestException(
             ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH CREATOR $id"
         )
 
-        val validator: Validator = IsDeletedValidator(actorForUpdate.isDeleted, Creator.DOMAIN)
+        val validator: Validator = IsDeletedValidator(creatorForUpdate.isDeleted, Creator.DOMAIN)
         validator.validate()
 
         return CreatorResponseDto.from(

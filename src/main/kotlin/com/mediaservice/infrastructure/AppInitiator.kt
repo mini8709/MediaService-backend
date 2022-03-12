@@ -4,9 +4,9 @@ import com.mediaservice.domain.ActorTable
 import com.mediaservice.domain.CreatorTable
 import com.mediaservice.domain.GenreTable
 import com.mediaservice.domain.LikeTable
-import com.mediaservice.domain.MediaAllSeriesActorTable
-import com.mediaservice.domain.MediaAllSeriesCreatorTable
-import com.mediaservice.domain.MediaAllSeriesGenreTable
+import com.mediaservice.domain.MediaContentsActorTable
+import com.mediaservice.domain.MediaContentsCreatorTable
+import com.mediaservice.domain.MediaContentsGenreTable
 import com.mediaservice.domain.MediaContentsTable
 import com.mediaservice.domain.MediaSeriesTable
 import com.mediaservice.domain.MediaTable
@@ -26,13 +26,13 @@ class AppInitiator {
             transaction {
                 SchemaUtils.drop(
                     UserTable, ProfileTable, MediaTable, MediaSeriesTable, MediaContentsTable,
-                    ActorTable, CreatorTable, GenreTable, MediaAllSeriesActorTable, MediaAllSeriesGenreTable,
-                    MediaAllSeriesCreatorTable, LikeTable
+                    ActorTable, CreatorTable, GenreTable, MediaContentsActorTable, MediaContentsGenreTable,
+                    MediaContentsCreatorTable, LikeTable
                 )
                 SchemaUtils.create(
                     UserTable, ProfileTable, MediaTable, MediaSeriesTable, MediaContentsTable,
-                    ActorTable, CreatorTable, GenreTable, MediaAllSeriesActorTable, MediaAllSeriesGenreTable,
-                    MediaAllSeriesCreatorTable, LikeTable
+                    ActorTable, CreatorTable, GenreTable, MediaContentsActorTable, MediaContentsGenreTable,
+                    MediaContentsCreatorTable, LikeTable
                 )
 
                 UserTable.insert {
@@ -160,8 +160,8 @@ class AppInitiator {
                     }.toSet().toList()
 
                     for (j in actorList) {
-                        MediaAllSeriesActorTable.insert {
-                            it[mediaAllSeries] = v
+                        MediaContentsActorTable.insert {
+                            it[mediaContents] = v
                             it[actor] = j
                         }
                     }
@@ -171,14 +171,14 @@ class AppInitiator {
                     }.toSet().toList()
 
                     for (j in genreList) {
-                        MediaAllSeriesGenreTable.insert {
-                            it[mediaAllSeries] = v
+                        MediaContentsGenreTable.insert {
+                            it[mediaContents] = v
                             it[genre] = j
                         }
                     }
 
-                    MediaAllSeriesCreatorTable.insert {
-                        it[mediaAllSeries] = v
+                    MediaContentsCreatorTable.insert {
+                        it[mediaContents] = v
                         it[creator] = creatorIds[i % creatorIds.size]
                     }
                 }

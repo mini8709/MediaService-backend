@@ -10,7 +10,7 @@ data class LikeResponseDto(
     companion object {
         fun from(like: Like) = LikeResponseDto(
             profileId = like.profile.id!!,
-            mediaContentsId = like.mediaContents.id
+            mediaContentsId = like.mediaContents.id!!
         )
     }
 }
