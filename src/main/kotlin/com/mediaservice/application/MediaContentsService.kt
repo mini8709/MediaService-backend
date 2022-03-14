@@ -2,6 +2,7 @@ package com.mediaservice.application
 
 import com.mediaservice.application.dto.media.MediaContentsCreateRequestDto
 import com.mediaservice.application.dto.media.MediaContentsResponseDto
+import com.mediaservice.application.dto.media.MediaSeriesCreateRequestDto
 import com.mediaservice.application.dto.media.MediaSeriesResponseDto
 import com.mediaservice.application.validator.IdEqualValidator
 import com.mediaservice.application.validator.IsDeletedValidator
@@ -49,6 +50,28 @@ class MediaContentsService(
             this.mediaSeriesRepository.findById(id) ?: throw BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
                 "NO SUCH MEDIA SERIES $id"
+            )
+        )
+    }
+
+    @Transactional
+    fun createMediaSeries(
+        id: UUID,
+        mediaSeriesCreateRequestDto: MediaSeriesCreateRequestDto
+    ): MediaSeriesResponseDto {
+        val mediaContents = this.mediaContentsRepository.findById(id)
+            ?: throw BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                "NO SUCH MEDIA CONTENTS $id"
+            )
+
+        return MediaSeriesResponseDto.from(
+            this.mediaSeriesRepository.save(
+                MediaSeries.of(
+                    mediaSeriesCreateRequestDto.title,
+                    mediaSeriesCreateRequestDto.order,
+                    mediaContents
+                )
             )
         )
     }

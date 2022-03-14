@@ -3,6 +3,7 @@ package com.mediaservice.web
 import com.mediaservice.application.MediaContentsService
 import com.mediaservice.application.dto.media.MediaContentsCreateRequestDto
 import com.mediaservice.application.dto.media.MediaContentsResponseDto
+import com.mediaservice.application.dto.media.MediaSeriesCreateRequestDto
 import com.mediaservice.application.dto.media.MediaSeriesResponseDto
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
@@ -17,7 +18,7 @@ import java.util.UUID
 @RestController
 @RequestMapping("/api/v1/media-contents")
 class MediaContentsController(private val mediaSeriesService: MediaContentsService) {
-    @GetMapping("/series/{id}")
+    @GetMapping("/series/detail/{id}")
     fun findMediaSeriesById(
         @AuthenticationPrincipal userId: String,
         @RequestHeader(value = "profileId") profileId: String,
@@ -27,6 +28,17 @@ class MediaContentsController(private val mediaSeriesService: MediaContentsServi
             UUID.fromString(userId),
             UUID.fromString(profileId),
             id
+        )
+    }
+
+    @PostMapping("/series/{id}")
+    fun createMediaSeries(
+        @PathVariable id: UUID,
+        @RequestBody mediaSeriesCreateRequestDto: MediaSeriesCreateRequestDto
+    ): MediaSeriesResponseDto {
+        return this.mediaSeriesService.createMediaSeries(
+            id,
+            mediaSeriesCreateRequestDto
         )
     }
 

@@ -2,6 +2,7 @@ package com.mediaservice
 
 import com.mediaservice.application.MediaContentsService
 import com.mediaservice.application.dto.media.MediaContentsCreateRequestDto
+import com.mediaservice.application.dto.media.MediaSeriesCreateRequestDto
 import com.mediaservice.domain.Actor
 import com.mediaservice.domain.Creator
 import com.mediaservice.domain.Genre
@@ -41,6 +42,7 @@ class MediaContentsServiceTest {
         )
     private lateinit var media: Media
     private lateinit var mediaSeries: MediaSeries
+    private lateinit var createdMediaSeries: MediaSeries
     private lateinit var mediaContents: MediaContents
     private lateinit var mediaContentsNoActor: MediaContents
     private lateinit var mediaContentsNoGenre: MediaContents
@@ -108,6 +110,9 @@ class MediaContentsServiceTest {
         this.mediaSeries = MediaSeries(
             mediaSeriesId, "season 1", 1, false, this.mediaContents
         )
+        this.createdMediaSeries = MediaSeries(
+            UUID.randomUUID(), "season 2", 2, false, this.mediaContents
+        )
         this.media = Media(
             mediaId, "test video 1", "test synopsis", 1, "test url",
             "test thumbnail", 100, false, this.mediaSeries
@@ -136,6 +141,45 @@ class MediaContentsServiceTest {
 
             // when
             this.mediaContentsService.findMediaSeriesById(this.userId, this.profileId, this.mediaSeriesId)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun successCreateMediaSeries() {
+        // given
+        mockkObject(MediaSeries)
+        val mediaSeriesCreateRequestDto = MediaSeriesCreateRequestDto("season 2", 2)
+
+        every {
+            MediaSeries.of(
+                mediaSeriesCreateRequestDto.title,
+                mediaSeriesCreateRequestDto.order,
+                mediaContents
+            )
+        } returns this.createdMediaSeries
+        every { mediaContentsRepository.findById(mediaContentsId) } returns this.mediaContents
+        every { mediaSeriesRepository.save(createdMediaSeries) } returns this.createdMediaSeries
+
+        // when
+        val mediaSeriesResponseDto = mediaContentsService.createMediaSeries(mediaContentsId, mediaSeriesCreateRequestDto)
+
+        // then
+        assertEquals("season 2", mediaSeriesResponseDto.title)
+    }
+
+    @Test
+    fun failCreateMediaSeries_NoMediaContents() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            val mediaSeriesCreateRequestDto = MediaSeriesCreateRequestDto("season 2", 2)
+
+            every { mediaContentsRepository.findById(mediaContentsId) } returns null
+
+            // when
+            mediaContentsService.createMediaSeries(mediaContentsId, mediaSeriesCreateRequestDto)
         }
 
         // then
