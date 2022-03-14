@@ -30,4 +30,11 @@ class MediaContentsRepository {
                 ).value
         return mediaContents
     }
+
+    fun deleteById(id: UUID): MediaContents? {
+        return MediaContentsEntity.findById(id)?.let {
+            it.isDeleted = true
+            return MediaContents.from(it)
+        }
+    }
 }

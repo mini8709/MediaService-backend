@@ -27,15 +27,21 @@ class MediaSeriesRepository {
     }
 
     fun save(mediaSeries: MediaSeries): MediaSeries {
-        mediaSeries.id =
-            (
-                MediaSeriesTable.insert {
-                    it[title] = mediaSeries.title
-                    it[order] = mediaSeries.order
-                    it[isDeleted] = false
-                    it[mediaContents] = mediaSeries.mediaContents.id
-                } get MediaSeriesTable.id
-                ).value
+        mediaSeries.id = (
+            MediaSeriesTable.insert {
+                it[title] = mediaSeries.title
+                it[order] = mediaSeries.order
+                it[isDeleted] = false
+                it[mediaContents] = mediaSeries.mediaContents.id
+            } get MediaSeriesTable.id
+            ).value
         return mediaSeries
+    }
+
+    fun deleteById(id: UUID): MediaSeries? {
+        return MediaSeriesEntity.findById(id)?.let {
+            it.isDeleted = true
+            return MediaSeries.from(it)
+        }
     }
 }

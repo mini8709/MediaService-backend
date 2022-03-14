@@ -27,37 +27,37 @@ class GlobalControllerAdvice {
             stringBuilder.append(fieldErrors.rejectedValue)
                 .append(": ").append(fieldErrors.defaultMessage).append(". ")
 
-        return ExceptionDto(ErrorCode.INVALID_FORMAT, stringBuilder.toString())
+        return ExceptionDto(ErrorCode.INVALID_FORMAT.code, stringBuilder.toString())
     }
 
     @ExceptionHandler(value = [BadRequestException::class])
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun badRequestException(e: BadRequestException): ExceptionDto {
-        return ExceptionDto(e.errorCode, e.message)
+        return ExceptionDto(e.errorCode.code, e.message)
     }
 
     @ExceptionHandler(value = [UnauthorizedException::class])
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    fun badRequestException(e: UnauthorizedException): ExceptionDto {
-        return ExceptionDto(e.errorCode, e.message)
+    fun unAuthorizationException(e: UnauthorizedException): ExceptionDto {
+        return ExceptionDto(e.errorCode.code, e.message)
     }
 
     @ExceptionHandler(value = [DataNotFoundException::class])
     @ResponseStatus(HttpStatus.NOT_FOUND)
     fun dataNotFoundException(e: DataNotFoundException): ExceptionDto {
-        return ExceptionDto(e.errorCode, e.message)
+        return ExceptionDto(e.errorCode.code, e.message)
     }
 
     @ExceptionHandler(value = [InternalServerException::class])
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     fun internalServerException(e: InternalServerException): ExceptionDto {
-        return ExceptionDto(e.errorCode, e.message)
+        return ExceptionDto(e.errorCode.code, e.message)
     }
 
     @ExceptionHandler(value = [ServerUnavailableException::class])
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     fun serverUnavailableException(e: ServerUnavailableException): ExceptionDto {
-        return ExceptionDto(e.errorCode, e.message)
+        return ExceptionDto(e.errorCode.code, e.message)
     }
 
     @ExceptionHandler(value = [AccessDeniedException::class])

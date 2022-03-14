@@ -15,8 +15,8 @@ class RoleSecurityConfig(
         "/api/v1/actors/*",
         "/api/v1/creators/*",
         "/api/v1/genres/*",
-        "/api/v1/media-contents",
-        "/api/v1/media/**"
+        "/api/v1/media/*",
+        "/api/v1/media-contents/*"
     )
 
     @Bean

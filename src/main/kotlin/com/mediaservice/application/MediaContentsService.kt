@@ -76,6 +76,16 @@ class MediaContentsService(
         )
     }
 
+    @Transactional
+    fun deleteMediaSeriesById(id: UUID): MediaSeriesResponseDto {
+        return MediaSeriesResponseDto.from(
+            this.mediaSeriesRepository.deleteById(id) ?: throw BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                "NO SUCH MEDIA SERIES $id"
+            )
+        )
+    }
+
     @Transactional(readOnly = true)
     fun findMediaContentsById(
         userId: UUID,
@@ -144,6 +154,19 @@ class MediaContentsService(
         return MediaContentsResponseDto.from(
             mediaContents,
             listOf(mediaSeries),
+            listOf(),
+            false
+        )
+    }
+
+    @Transactional
+    fun deleteMediaContentsById(id: UUID): MediaContentsResponseDto {
+        return MediaContentsResponseDto.from(
+            this.mediaContentsRepository.deleteById(id) ?: throw BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                "NO SUCH MEDIA CONTENTS $id"
+            ),
+            listOf(),
             listOf(),
             false
         )

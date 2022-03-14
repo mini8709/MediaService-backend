@@ -6,6 +6,7 @@ import com.mediaservice.application.dto.media.MediaContentsResponseDto
 import com.mediaservice.application.dto.media.MediaSeriesCreateRequestDto
 import com.mediaservice.application.dto.media.MediaSeriesResponseDto
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -17,14 +18,14 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/api/v1/media-contents")
-class MediaContentsController(private val mediaSeriesService: MediaContentsService) {
-    @GetMapping("/series/detail/{id}")
+class MediaContentsController(private val mediaContentsService: MediaContentsService) {
+    @GetMapping("/series/{id}")
     fun findMediaSeriesById(
         @AuthenticationPrincipal userId: String,
         @RequestHeader(value = "profileId") profileId: String,
         @PathVariable id: UUID
     ): MediaSeriesResponseDto {
-        return this.mediaSeriesService.findMediaSeriesById(
+        return this.mediaContentsService.findMediaSeriesById(
             UUID.fromString(userId),
             UUID.fromString(profileId),
             id
@@ -36,10 +37,17 @@ class MediaContentsController(private val mediaSeriesService: MediaContentsServi
         @PathVariable id: UUID,
         @RequestBody mediaSeriesCreateRequestDto: MediaSeriesCreateRequestDto
     ): MediaSeriesResponseDto {
-        return this.mediaSeriesService.createMediaSeries(
+        return this.mediaContentsService.createMediaSeries(
             id,
             mediaSeriesCreateRequestDto
         )
+    }
+
+    @DeleteMapping("/series/{id}")
+    fun deleteMediaSeriesById(
+        @PathVariable id: UUID
+    ): MediaSeriesResponseDto {
+        return this.mediaContentsService.deleteMediaSeriesById(id)
     }
 
     @GetMapping("/{id}")
@@ -48,7 +56,7 @@ class MediaContentsController(private val mediaSeriesService: MediaContentsServi
         @RequestHeader(value = "profileId") profileId: String,
         @PathVariable id: UUID
     ): MediaContentsResponseDto {
-        return this.mediaSeriesService.findMediaContentsById(
+        return this.mediaContentsService.findMediaContentsById(
             UUID.fromString(userId),
             UUID.fromString(profileId),
             id
@@ -59,8 +67,15 @@ class MediaContentsController(private val mediaSeriesService: MediaContentsServi
     fun createMediaContents(
         @RequestBody mediaContentsCreateRequestDto: MediaContentsCreateRequestDto
     ): MediaContentsResponseDto {
-        return this.mediaSeriesService.createMediaContents(
+        return this.mediaContentsService.createMediaContents(
             mediaContentsCreateRequestDto
         )
+    }
+
+    @DeleteMapping("/{id}")
+    fun deleteMediaContentsById(
+        @PathVariable id: UUID
+    ): MediaContentsResponseDto {
+        return this.mediaContentsService.deleteMediaContentsById(id)
     }
 }

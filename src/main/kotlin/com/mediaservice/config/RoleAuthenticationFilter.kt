@@ -19,7 +19,10 @@ class RoleAuthenticationFilter(
         filterChain: FilterChain
     ) {
         val token: String? = this.tokenProvider.resolveAccessToken(request)
-        if (token == null || !this.tokenProvider.checkAdmin(token, request)) {
+
+        if (!request.method.equals("GET", true) &&
+            (token == null || !this.tokenProvider.checkAdmin(token, request))
+        ) {
             request.setAttribute("errorCode", ErrorCode.NOT_ACCESSIBLE)
             jwtAuthenticationEntryPoint.commence(request, response, null)
         } else {

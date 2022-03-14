@@ -14,7 +14,7 @@ import java.util.UUID
 @RestController
 @RequestMapping("/api/v1/media")
 class MediaController(private val mediaService: MediaService) {
-    @GetMapping("/detail/{id}")
+    @GetMapping("/{id}")
     fun findById(
         @AuthenticationPrincipal userId: String,
         @RequestHeader(value = "profileId") profileId: String,
@@ -27,7 +27,7 @@ class MediaController(private val mediaService: MediaService) {
         )
     }
 
-    @GetMapping("/list/{id}")
+    @GetMapping("/series/{id}")
     fun findByMediaSeries(
         @AuthenticationPrincipal userId: String,
         @RequestHeader(value = "profileId") profileId: String,
