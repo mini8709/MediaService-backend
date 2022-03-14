@@ -19,7 +19,7 @@ class JwtAuthenticationFilter(
         val accessToken: String? = this.tokenProvider.resolveAccessToken(request as HttpServletRequest)
         val refreshToken: String? = this.tokenProvider.resolveRefreshToken(request)
 
-        if (accessToken != null && this.tokenProvider.validateToken(
+        if (this.tokenProvider.validateToken(
                 accessToken,
                 refreshToken,
                 request,
