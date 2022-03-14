@@ -126,4 +126,30 @@ class MediaServiceTest {
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
     }
+
+    @Test
+    fun successDeleteById() {
+        // given
+        every { mediaRepository.deleteById(mediaId) } returns this.media
+
+        // when
+        val mediaResponseDto: MediaResponseDto = this.mediaService.deleteById(this.mediaId)
+
+        // then
+        assertEquals(this.media.name, mediaResponseDto.name)
+    }
+
+    @Test
+    fun failDeleteById() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            every { mediaRepository.deleteById(mediaId) } returns null
+
+            // when
+            this.mediaService.deleteById(this.mediaId)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
 }

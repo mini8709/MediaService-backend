@@ -83,6 +83,7 @@ tasks.jacocoTestReport {
                 fileTree(it) {
                     exclude(
                         "**/application/dto/**",
+                        "**/application/validator/**",
                         "**/domain/**",
                         "**/config/**",
                         "**/web/**",

@@ -64,4 +64,16 @@ class MediaService(
             "NO SUCH MEDIA LIST WITH MEDIA SERIES $id"
         )
     }
+
+    @Transactional
+    fun deleteById(
+        id: UUID
+    ): MediaResponseDto {
+        return MediaResponseDto.from(
+            this.mediaRepository.deleteById(id) ?: throw BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                "NO SUCH MEDIA $id"
+            )
+        )
+    }
 }

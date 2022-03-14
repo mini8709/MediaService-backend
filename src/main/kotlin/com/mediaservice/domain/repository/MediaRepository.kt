@@ -24,4 +24,11 @@ class MediaRepository {
             Media.from(it)
         }.toList()
     }
+
+    fun deleteById(id: UUID): Media? {
+        return MediaEntity.findById(id)?.let {
+            it.isDeleted = true
+            return Media.from(it)
+        }
+    }
 }
