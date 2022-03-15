@@ -15,7 +15,7 @@ class MediaRepository {
         }
     }
 
-    fun findByMediaSeriesId(id: UUID): List<Media>? {
+    fun findByMediaSeriesId(id: UUID): List<Media> {
         return MediaEntity.find {
             MediaTable.mediaSeries eq id and (MediaTable.isDeleted eq false)
         }.sortedBy {

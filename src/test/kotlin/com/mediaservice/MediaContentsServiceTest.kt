@@ -3,6 +3,7 @@ package com.mediaservice
 import com.mediaservice.application.MediaContentsService
 import com.mediaservice.application.dto.media.MediaContentsCreateRequestDto
 import com.mediaservice.application.dto.media.MediaSeriesCreateRequestDto
+import com.mediaservice.application.dto.media.MediaSeriesUpdateRequestDto
 import com.mediaservice.domain.Actor
 import com.mediaservice.domain.Creator
 import com.mediaservice.domain.Genre
@@ -187,9 +188,69 @@ class MediaContentsServiceTest {
     }
 
     @Test
+    fun successUpdateMediaSeries() {
+        // given
+        val mediaSeriesUpdateRequestDto = MediaSeriesUpdateRequestDto(
+            "season 1", 1
+        )
+
+        every { mediaSeriesRepository.findById(mediaSeriesId) } returns this.mediaSeries
+        every { mediaSeriesRepository.update(mediaSeries) } returns this.mediaSeries
+
+        // when
+        val mediaSeriesResponseDto = this.mediaContentsService.updateMediaSeries(
+            this.mediaSeriesId,
+            mediaSeriesUpdateRequestDto
+        )
+
+        // then
+        assertEquals(this.mediaSeries.title, mediaSeriesResponseDto.title)
+    }
+
+    @Test
+    fun failUpdateMediaSeries_CannotFindMediaSeries() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            val mediaSeriesUpdateRequestDto = MediaSeriesUpdateRequestDto(
+                "season 1", 1
+            )
+
+            every { mediaSeriesRepository.findById(mediaSeriesId) } returns null
+
+            // when
+            this.mediaContentsService.updateMediaSeries(this.mediaSeriesId, mediaSeriesUpdateRequestDto)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun failUpdateMediaSeries_AlreadyDeletedMediaSeries() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            val mediaSeriesUpdateRequestDto = MediaSeriesUpdateRequestDto(
+                "season 1", 1
+            )
+
+            this.mediaSeries.isDeleted = true
+            every { mediaSeriesRepository.findById(mediaSeriesId) } returns this.mediaSeries
+
+            // when
+            this.mediaContentsService.updateMediaSeries(this.mediaSeriesId, mediaSeriesUpdateRequestDto)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)
+    }
+
+    @Test
     fun successDeleteMediaSeriesById() {
         // given
+        every { mediaSeriesRepository.findById(mediaSeriesId) } returns this.mediaSeries
         every { mediaSeriesRepository.deleteById(mediaSeriesId) } returns this.mediaSeries
+        every { mediaRepository.findByMediaSeriesId(mediaSeriesId) } returns listOf(this.media)
+        every { mediaRepository.deleteById(mediaId) } returns this.media
 
         // when
         val mediaSeriesResponseDto = this.mediaContentsService.deleteMediaSeriesById(this.mediaSeriesId)
@@ -199,10 +260,10 @@ class MediaContentsServiceTest {
     }
 
     @Test
-    fun failDeleteMediaSeriesById() {
+    fun failDeleteMediaSeriesById_CannotFindMediaSeries() {
         val exception = assertThrows(BadRequestException::class.java) {
             // given
-            every { mediaSeriesRepository.deleteById(mediaSeriesId) } returns null
+            every { mediaSeriesRepository.findById(mediaSeriesId) } returns null
 
             // when
             this.mediaContentsService.deleteMediaSeriesById(this.mediaSeriesId)
@@ -210,6 +271,21 @@ class MediaContentsServiceTest {
 
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun failDeleteMediaSeriesById_AlreadyDeletedMediaSeries() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            this.mediaSeries.isDeleted = true
+            every { mediaSeriesRepository.findById(mediaSeriesId) } returns this.mediaSeries
+
+            // when
+            this.mediaContentsService.deleteMediaSeriesById(this.mediaSeriesId)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)
     }
 
     @Test
@@ -222,7 +298,7 @@ class MediaContentsServiceTest {
             mediaContentsRepository.findById(mediaContentsId)
         } returns this.mediaContents
         every {
-            mediaSeriesRepository.findByMediaAllSeriesId(any())
+            mediaSeriesRepository.findByMediaContentsId(any())
         } returns listOf(this.mediaSeries)
         every {
             mediaRepository.findByMediaSeriesId(any())
@@ -294,49 +370,6 @@ class MediaContentsServiceTest {
     }
 
     @Test
-    fun failFindDetail_NoMediaSeriesList() {
-        val exception = assertThrows(BadRequestException::class.java) {
-            // given
-            every {
-                profileRepository.findById(profileId)
-            } returns this.profile
-            every {
-                mediaContentsRepository.findById(mediaContentsId)
-            } returns this.mediaContents
-            every {
-                mediaSeriesRepository.findByMediaAllSeriesId(any())
-            } returns null
-
-            // when
-            mediaContentsService.findMediaContentsById(this.userId, this.profileId, this.mediaContentsId)
-        }
-        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
-    }
-
-    @Test
-    fun failFindDetail_NoMediaList() {
-        val exception = assertThrows(BadRequestException::class.java) {
-            // given
-            every {
-                profileRepository.findById(profileId)
-            } returns this.profile
-            every {
-                mediaContentsRepository.findById(mediaContentsId)
-            } returns this.mediaContents
-            every {
-                mediaSeriesRepository.findByMediaAllSeriesId(any())
-            } returns listOf(this.mediaSeries)
-            every {
-                mediaRepository.findByMediaSeriesId(any())
-            } returns null
-
-            // when
-            mediaContentsService.findMediaContentsById(this.userId, this.profileId, this.mediaContentsId)
-        }
-        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
-    }
-
-    @Test
     fun successCreateMediaContents() {
         // given
         mockkObject(MediaContents)
@@ -386,8 +419,23 @@ class MediaContentsServiceTest {
     fun successDeleteMediaContentsById() {
         // given
         every {
+            mediaContentsRepository.findById(mediaContentsId)
+        } returns this.mediaContents
+        every {
             mediaContentsRepository.deleteById(mediaContentsId)
         } returns this.mediaContents
+        every {
+            mediaSeriesRepository.findByMediaContentsId(mediaContentsId)
+        } returns listOf(this.mediaSeries)
+        every {
+            mediaSeriesRepository.deleteById(mediaSeriesId)
+        } returns this.mediaSeries
+        every {
+            mediaRepository.findByMediaSeriesId(mediaSeriesId)
+        } returns listOf(this.media)
+        every {
+            mediaRepository.deleteById(mediaId)
+        } returns this.media
 
         // when
         val mediaContentsResponseDto = mediaContentsService.deleteMediaContentsById(this.mediaContentsId)
@@ -397,11 +445,11 @@ class MediaContentsServiceTest {
     }
 
     @Test
-    fun failDeleteMediaContentsById() {
+    fun failDeleteMediaContentsById_CannotFindMediaContents() {
         val exception = assertThrows(BadRequestException::class.java) {
             // given
             every {
-                mediaContentsRepository.deleteById(mediaContentsId)
+                mediaContentsRepository.findById(mediaContentsId)
             } returns null
 
             // when
@@ -410,5 +458,22 @@ class MediaContentsServiceTest {
 
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun failDeleteMediaContentsById_AlreadyDeletedMediaContents() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            this.mediaContents.isDeleted = true
+            every {
+                mediaContentsRepository.findById(mediaContentsId)
+            } returns this.mediaContents
+
+            // when
+            mediaContentsService.deleteMediaContentsById(this.mediaContentsId)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)
     }
 }

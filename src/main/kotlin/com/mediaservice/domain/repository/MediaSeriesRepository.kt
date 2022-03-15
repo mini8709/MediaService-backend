@@ -16,7 +16,7 @@ class MediaSeriesRepository {
         }
     }
 
-    fun findByMediaAllSeriesId(id: UUID): List<MediaSeries>? {
+    fun findByMediaContentsId(id: UUID): List<MediaSeries> {
         return MediaSeriesEntity.find {
             MediaSeriesTable.mediaContents eq id and (MediaSeriesTable.isDeleted eq false)
         }.sortedBy {
@@ -36,6 +36,15 @@ class MediaSeriesRepository {
             } get MediaSeriesTable.id
             ).value
         return mediaSeries
+    }
+
+    fun update(mediaSeries: MediaSeries): MediaSeries? {
+        return MediaSeriesEntity.findById(mediaSeries.id!!)?.let {
+            it.title = mediaSeries.title
+            it.order = mediaSeries.order
+
+            return MediaSeries.from(it)
+        }
     }
 
     fun deleteById(id: UUID): MediaSeries? {

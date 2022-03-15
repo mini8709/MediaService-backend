@@ -61,12 +61,9 @@ class MediaService(
         validator.linkWith(IdEqualValidator(userId, profile.user.id!!))
         validator.validate()
 
-        return this.mediaRepository.findByMediaSeriesId(id)?.map {
+        return this.mediaRepository.findByMediaSeriesId(id).map {
             MediaResponseDto.from(it)
-        } ?: throw BadRequestException(
-            ErrorCode.ROW_DOES_NOT_EXIST,
-            "NO SUCH MEDIA LIST WITH MEDIA SERIES $id"
-        )
+        }
     }
 
     @Transactional

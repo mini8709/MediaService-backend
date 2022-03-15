@@ -23,6 +23,7 @@ import com.mediaservice.exception.ErrorCode
 import com.mediaservice.exception.InternalServerException
 import com.mediaservice.infrastructure.Authentication
 import com.mediaservice.infrastructure.GoogleMailSender
+import com.mediaservice.infrastructure.PasswordGenerator
 import com.mediaservice.infrastructure.RedisUtil
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

@@ -22,6 +22,8 @@ class MediaSeries(
     var mediaContents: MediaContents
 ) {
     companion object {
+        const val DOMAIN = "MEDIA SERIES"
+
         fun from(mediaSeriesEntity: MediaSeriesEntity) = MediaSeries(
             id = mediaSeriesEntity.id.value,
             title = mediaSeriesEntity.title,
@@ -37,6 +39,14 @@ class MediaSeries(
             isDeleted = false,
             mediaContents = mediaContents
         )
+    }
+
+    fun update(
+        title: String,
+        order: Int
+    ) {
+        this.title = title
+        this.order = order
     }
 }
 

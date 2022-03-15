@@ -4,10 +4,13 @@ import com.mediaservice.application.dto.media.MediaContentsCreateRequestDto
 import com.mediaservice.application.dto.media.MediaContentsResponseDto
 import com.mediaservice.application.dto.media.MediaSeriesCreateRequestDto
 import com.mediaservice.application.dto.media.MediaSeriesResponseDto
+import com.mediaservice.application.dto.media.MediaSeriesUpdateRequestDto
 import com.mediaservice.application.validator.IdEqualValidator
 import com.mediaservice.application.validator.IsDeletedValidator
 import com.mediaservice.application.validator.RateMatchValidator
+import com.mediaservice.application.validator.Validator
 import com.mediaservice.domain.Like
+import com.mediaservice.domain.Media
 import com.mediaservice.domain.MediaContents
 import com.mediaservice.domain.MediaSeries
 import com.mediaservice.domain.Profile
@@ -18,6 +21,7 @@ import com.mediaservice.domain.repository.MediaSeriesRepository
 import com.mediaservice.domain.repository.ProfileRepository
 import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.ErrorCode
+import com.mediaservice.exception.InternalServerException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -77,13 +81,49 @@ class MediaContentsService(
     }
 
     @Transactional
-    fun deleteMediaSeriesById(id: UUID): MediaSeriesResponseDto {
+    fun updateMediaSeries(
+        id: UUID,
+        mediaSeriesUpdateRequestDto: MediaSeriesUpdateRequestDto
+    ): MediaSeriesResponseDto {
+        val mediaSeriesForUpdate = this.mediaSeriesRepository.findById(id) ?: throw BadRequestException(
+            ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH MEDIA SERIES $id"
+        )
+
+        val validator: Validator = IsDeletedValidator(mediaSeriesForUpdate.isDeleted, MediaSeries.DOMAIN)
+        validator.validate()
+
+        mediaSeriesForUpdate.update(
+            mediaSeriesUpdateRequestDto.title,
+            mediaSeriesUpdateRequestDto.order
+        )
+
         return MediaSeriesResponseDto.from(
-            this.mediaSeriesRepository.deleteById(id) ?: throw BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                "NO SUCH MEDIA SERIES $id"
+            this.mediaSeriesRepository.update(mediaSeriesForUpdate) ?: throw InternalServerException(
+                ErrorCode.INTERNAL_SERVER, "MEDIA SERIES IS CHECKED, BUT EXCEPTION OCCURS"
             )
         )
+    }
+
+    @Transactional
+    fun deleteMediaSeriesById(id: UUID): MediaSeriesResponseDto {
+        var mediaSeriesForDelete = this.mediaSeriesRepository.findById(id) ?: throw BadRequestException(
+            ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH MEDIA SERIES $id"
+        )
+
+        val validator: Validator = IsDeletedValidator(mediaSeriesForDelete.isDeleted, MediaSeries.DOMAIN)
+        validator.validate()
+
+        mediaSeriesForDelete = this.mediaSeriesRepository.deleteById(id) ?: throw BadRequestException(
+            ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH MEDIA SERIES $id"
+        )
+
+        val mediaList: List<Media> = this.mediaRepository.findByMediaSeriesId(mediaSeriesForDelete.id!!)
+
+        mediaList.stream().forEach {
+            this.mediaRepository.deleteById(it.id)
+        }
+
+        return MediaSeriesResponseDto.from(mediaSeriesForDelete)
     }
 
     @Transactional(readOnly = true)
@@ -111,21 +151,16 @@ class MediaContentsService(
             .linkWith(IdEqualValidator(userId, profile.user.id!!))
         validator.validate()
 
-        val mediaSeriesList = this.mediaSeriesRepository.findByMediaAllSeriesId(mediaContents.id!!)
-            ?: throw BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                "NO SUCH MEDIA SERIES LIST WITH MEDIA CONTENTS ${mediaContents.id}"
-            )
+        val mediaSeriesList = this.mediaSeriesRepository.findByMediaContentsId(mediaContents.id!!)
 
-        val mediaList = this.mediaRepository.findByMediaSeriesId(mediaSeriesList[0].id!!)
-            ?: throw BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                "NO SUCH MEDIA LIST WITH MEDIA SERIES ${mediaSeriesList[0].id}"
-            )
-
-        val isLike = this.likeRepository.isExist(Like.of(profile, mediaContents))
-
-        return MediaContentsResponseDto.from(mediaContents, mediaSeriesList, mediaList, isLike)
+        return MediaContentsResponseDto.from(
+            mediaContents,
+            mediaSeriesList,
+            mediaSeriesList.stream().findFirst().map {
+                this.mediaRepository.findByMediaSeriesId(it.id!!)
+            }.orElse(listOf()),
+            this.likeRepository.isExist(Like.of(profile, mediaContents))
+        )
     }
 
     @Transactional
@@ -161,11 +196,35 @@ class MediaContentsService(
 
     @Transactional
     fun deleteMediaContentsById(id: UUID): MediaContentsResponseDto {
+        var mediaContentsForDelete = this.mediaContentsRepository.findById(id) ?: throw BadRequestException(
+            ErrorCode.ROW_DOES_NOT_EXIST,
+            "NO SUCH MEDIA CONTENTS $id"
+        )
+
+        val validator: Validator = IsDeletedValidator(mediaContentsForDelete.isDeleted, MediaSeries.DOMAIN)
+        validator.validate()
+
+        mediaContentsForDelete = this.mediaContentsRepository.deleteById(id) ?: throw BadRequestException(
+            ErrorCode.ROW_DOES_NOT_EXIST,
+            "NO SUCH MEDIA CONTENTS $id"
+        )
+
+        val mediaSeriesList: List<MediaSeries> = this.mediaSeriesRepository.findByMediaContentsId(
+            mediaContentsForDelete.id!!
+        )
+
+        mediaSeriesList.stream().forEach { mediaSeries ->
+            this.mediaSeriesRepository.deleteById(mediaSeries.id!!)
+
+            val mediaList: List<Media> = this.mediaRepository.findByMediaSeriesId(mediaSeries.id!!)
+
+            mediaList.stream().forEach { media ->
+                this.mediaRepository.deleteById(media.id)
+            }
+        }
+
         return MediaContentsResponseDto.from(
-            this.mediaContentsRepository.deleteById(id) ?: throw BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST,
-                "NO SUCH MEDIA CONTENTS $id"
-            ),
+            mediaContentsForDelete,
             listOf(),
             listOf(),
             false

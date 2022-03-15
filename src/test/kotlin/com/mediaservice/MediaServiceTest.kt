@@ -114,21 +114,6 @@ class MediaServiceTest {
     }
 
     @Test
-    fun failFindByMediaSeries() {
-        val exception = assertThrows(BadRequestException::class.java) {
-            // given
-            every { mediaRepository.findByMediaSeriesId(mediaSeriesId) } returns null
-            every { profileRepository.findById(profileId) } returns this.profile
-
-            // when
-            this.mediaService.findByMediaSeries(this.userId, this.profileId, this.mediaSeriesId)
-        }
-
-        // then
-        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
-    }
-
-    @Test
     fun successDeleteById() {
         // given
         every { mediaRepository.findById(mediaId) } returns this.media

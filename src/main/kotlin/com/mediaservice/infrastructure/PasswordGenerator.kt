@@ -1,6 +1,6 @@
-package com.mediaservice.application
+package com.mediaservice.infrastructure
 
-class PasswordGenerator() {
+class PasswordGenerator {
     private val regex = "^(?=.*[a-zA-Z])((?=.*\\d)(?=.*\\W)).{8,20}$".toRegex()
     private lateinit var newPassword: String
 

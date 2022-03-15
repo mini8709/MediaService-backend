@@ -87,7 +87,8 @@ tasks.jacocoTestReport {
                         "**/domain/**",
                         "**/config/**",
                         "**/web/**",
-                        "**/exception/**"
+                        "**/exception/**",
+                        "**/infrastructure/**"
                     )
                 }
             }
