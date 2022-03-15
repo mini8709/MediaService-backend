@@ -3,6 +3,7 @@ package com.mediaservice.web
 import com.mediaservice.application.MediaContentsService
 import com.mediaservice.application.dto.media.MediaContentsCreateRequestDto
 import com.mediaservice.application.dto.media.MediaContentsResponseDto
+import com.mediaservice.application.dto.media.MediaContentsUpdateRequestDto
 import com.mediaservice.application.dto.media.MediaSeriesCreateRequestDto
 import com.mediaservice.application.dto.media.MediaSeriesResponseDto
 import com.mediaservice.application.dto.media.MediaSeriesUpdateRequestDto
@@ -80,6 +81,14 @@ class MediaContentsController(private val mediaContentsService: MediaContentsSer
         return this.mediaContentsService.createMediaContents(
             mediaContentsCreateRequestDto
         )
+    }
+
+    @PutMapping("/{id}")
+    fun updateMediaContents(
+        @PathVariable id: UUID,
+        @RequestBody mediaContentsUpdateRequestDto: MediaContentsUpdateRequestDto
+    ): MediaContentsResponseDto {
+        return this.mediaContentsService.updateMediaContents(id, mediaContentsUpdateRequestDto)
     }
 
     @DeleteMapping("/{id}")

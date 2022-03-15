@@ -31,6 +31,19 @@ class MediaContentsRepository {
         return mediaContents
     }
 
+    fun update(mediaContents: MediaContents): MediaContents? {
+        return MediaContentsEntity.findById(mediaContents.id!!)?.let {
+            it.title = mediaContents.title
+            it.synopsis = mediaContents.synopsis
+            it.trailer = mediaContents.trailer
+            it.thumbnail = mediaContents.thumbnail
+            it.rate = mediaContents.rate
+            it.isSeries = mediaContents.isSeries
+
+            return MediaContents.from(it)
+        }
+    }
+
     fun deleteById(id: UUID): MediaContents? {
         return MediaContentsEntity.findById(id)?.let {
             it.isDeleted = true

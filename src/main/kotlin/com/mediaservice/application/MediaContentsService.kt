@@ -2,6 +2,7 @@ package com.mediaservice.application
 
 import com.mediaservice.application.dto.media.MediaContentsCreateRequestDto
 import com.mediaservice.application.dto.media.MediaContentsResponseDto
+import com.mediaservice.application.dto.media.MediaContentsUpdateRequestDto
 import com.mediaservice.application.dto.media.MediaSeriesCreateRequestDto
 import com.mediaservice.application.dto.media.MediaSeriesResponseDto
 import com.mediaservice.application.dto.media.MediaSeriesUpdateRequestDto
@@ -189,6 +190,37 @@ class MediaContentsService(
         return MediaContentsResponseDto.from(
             mediaContents,
             listOf(mediaSeries),
+            listOf(),
+            false
+        )
+    }
+
+    @Transactional
+    fun updateMediaContents(
+        id: UUID,
+        mediaContentsUpdateRequestDto: MediaContentsUpdateRequestDto
+    ): MediaContentsResponseDto {
+        val mediaContentsForUpdate = this.mediaContentsRepository.findById(id) ?: throw BadRequestException(
+            ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH MEDIA CONTENTS $id"
+        )
+
+        val validator: Validator = IsDeletedValidator(mediaContentsForUpdate.isDeleted, MediaContents.DOMAIN)
+        validator.validate()
+
+        mediaContentsForUpdate.update(
+            mediaContentsUpdateRequestDto.title,
+            mediaContentsUpdateRequestDto.synopsis,
+            mediaContentsUpdateRequestDto.trailer,
+            mediaContentsUpdateRequestDto.thumbnail,
+            mediaContentsUpdateRequestDto.rate,
+            mediaContentsUpdateRequestDto.isSeries
+        )
+
+        return MediaContentsResponseDto.from(
+            this.mediaContentsRepository.update(mediaContentsForUpdate) ?: throw InternalServerException(
+                ErrorCode.INTERNAL_SERVER, "MEDIA CONTENTS IS CHECKED, BUT EXCEPTION OCCURS"
+            ),
+            listOf(),
             listOf(),
             false
         )

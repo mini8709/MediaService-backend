@@ -1,6 +1,6 @@
 package com.mediaservice.application.dto.media
 
-class MediaUpdateRequestDto(
+data class MediaUpdateRequestDto(
     val name: String,
     val synopsis: String,
     val order: Int,

@@ -69,6 +69,22 @@ class MediaContents(
             creatorList = listOf()
         )
     }
+
+    fun update(
+        title: String,
+        synopsis: String,
+        trailer: String,
+        thumbnail: String,
+        rate: String,
+        isSeries: Boolean
+    ) {
+        this.title = title
+        this.synopsis = synopsis
+        this.trailer = trailer
+        this.thumbnail = thumbnail
+        this.rate = rate
+        this.isSeries = isSeries
+    }
 }
 
 class MediaContentsEntity(id: EntityID<UUID>) : UUIDEntity(id) {
