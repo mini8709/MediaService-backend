@@ -20,6 +20,7 @@ import com.mediaservice.domain.repository.RefreshTokenRepository
 import com.mediaservice.domain.repository.UserRepository
 import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.ErrorCode
+import com.mediaservice.exception.InternalServerException
 import com.mediaservice.infrastructure.Authentication
 import com.mediaservice.infrastructure.GoogleMailSender
 import com.mediaservice.infrastructure.RedisUtil
@@ -126,7 +127,7 @@ class UserService(
         validator.validate()
         user.updatePassword(passwordUpdateRequestDto.dstPassword)
         val updateUser = this.userRepository.update(id, user)
-            ?: throw BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH USER $id")
+            ?: throw InternalServerException(ErrorCode.INTERNAL_SERVER, "USER IS CHECKED, BUT EXCEPTION OCCURS")
 
         return UserResponseDto.from(updateUser)
     }
@@ -142,7 +143,7 @@ class UserService(
 
         user.updatePassword(newPassword)
         val updateUser = this.userRepository.update(user.id!!, user)
-            ?: throw BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH USER ${user.id}")
+            ?: throw InternalServerException(ErrorCode.INTERNAL_SERVER, "USER IS CHECKED, BUT EXCEPTION OCCURS")
 
         return UserResponseDto.from(updateUser)
     }

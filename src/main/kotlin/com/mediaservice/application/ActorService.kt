@@ -9,6 +9,7 @@ import com.mediaservice.domain.Actor
 import com.mediaservice.domain.repository.ActorRepository
 import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.ErrorCode
+import com.mediaservice.exception.InternalServerException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -41,8 +42,8 @@ class ActorService(
             this.actorRepository.update(
                 id,
                 actorForUpdate
-            ) ?: throw BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH ACTOR $id"
+            ) ?: throw InternalServerException(
+                ErrorCode.INTERNAL_SERVER, "ACTOR IS CHECKED, BUT EXCEPTION OCCURS"
             )
         )
     }

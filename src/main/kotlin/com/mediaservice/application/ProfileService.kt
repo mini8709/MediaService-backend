@@ -18,6 +18,7 @@ import com.mediaservice.domain.repository.ProfileRepository
 import com.mediaservice.domain.repository.UserRepository
 import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.ErrorCode
+import com.mediaservice.exception.InternalServerException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -115,8 +116,8 @@ class ProfileService(
         return ProfileResponseDto.from(
             this.profileRepository.update(
                 profileForUpdate
-            ) ?: throw BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH PROFILE $profileId"
+            ) ?: throw InternalServerException(
+                ErrorCode.INTERNAL_SERVER, "PROFILE IS CHECKED, BUT EXCEPTION OCCURS"
             )
         )
     }

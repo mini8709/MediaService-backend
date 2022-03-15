@@ -2,6 +2,7 @@ package com.mediaservice
 
 import com.mediaservice.application.MediaService
 import com.mediaservice.application.dto.media.MediaResponseDto
+import com.mediaservice.application.dto.media.MediaUpdateRequestDto
 import com.mediaservice.domain.Actor
 import com.mediaservice.domain.Creator
 import com.mediaservice.domain.Genre
@@ -130,6 +131,7 @@ class MediaServiceTest {
     @Test
     fun successDeleteById() {
         // given
+        every { mediaRepository.findById(mediaId) } returns this.media
         every { mediaRepository.deleteById(mediaId) } returns this.media
 
         // when
@@ -140,10 +142,10 @@ class MediaServiceTest {
     }
 
     @Test
-    fun failDeleteById() {
+    fun failDeleteById_CannotFindMedia() {
         val exception = assertThrows(BadRequestException::class.java) {
             // given
-            every { mediaRepository.deleteById(mediaId) } returns null
+            every { mediaRepository.findById(mediaId) } returns null
 
             // when
             this.mediaService.deleteById(this.mediaId)
@@ -151,5 +153,77 @@ class MediaServiceTest {
 
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun failDeleteById_AlreadyDeletedMedia() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            this.media.isDeleted = true
+            every { mediaRepository.findById(mediaId) } returns this.media
+
+            // when
+            this.mediaService.deleteById(this.mediaId)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)
+    }
+
+    @Test
+    fun successUpdate() {
+        // given
+        val mediaUpdateRequestDto = MediaUpdateRequestDto(
+            "test video 1", "test synopsis", 1, "test url",
+            "test thumbnail", 100
+        )
+
+        every { mediaRepository.findById(mediaId) } returns this.media
+        every { mediaRepository.update(media) } returns this.media
+
+        // when
+        val mediaResponseDto: MediaResponseDto = this.mediaService.update(this.mediaId, mediaUpdateRequestDto)
+
+        // then
+        assertEquals(this.media.name, mediaResponseDto.name)
+    }
+
+    @Test
+    fun failUpdate_CannotFindMedia() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            val mediaUpdateRequestDto = MediaUpdateRequestDto(
+                "test video 1", "test synopsis", 1, "test url",
+                "test thumbnail", 100
+            )
+
+            every { mediaRepository.findById(mediaId) } returns null
+
+            // when
+            this.mediaService.update(this.mediaId, mediaUpdateRequestDto)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
+    @Test
+    fun failUpdate_AlreadyDeletedMedia() {
+        val exception = assertThrows(BadRequestException::class.java) {
+            // given
+            val mediaUpdateRequestDto = MediaUpdateRequestDto(
+                "test video 1", "test synopsis", 1, "test url",
+                "test thumbnail", 100
+            )
+
+            media.isDeleted = true
+            every { mediaRepository.findById(mediaId) } returns media
+
+            // when
+            this.mediaService.update(this.mediaId, mediaUpdateRequestDto)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)
     }
 }

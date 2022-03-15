@@ -25,6 +25,19 @@ class MediaRepository {
         }.toList()
     }
 
+    fun update(media: Media): Media? {
+        return MediaEntity.findById(media.id)?.let {
+            it.name = media.name
+            it.synopsis = media.synopsis
+            it.order = media.order
+            it.url = media.url
+            it.thumbnail = media.thumbnail
+            it.runningTime = media.runningTime
+
+            return Media.from(it)
+        }
+    }
+
     fun deleteById(id: UUID): Media? {
         return MediaEntity.findById(id)?.let {
             it.isDeleted = true

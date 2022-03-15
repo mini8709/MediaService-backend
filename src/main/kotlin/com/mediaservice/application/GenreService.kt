@@ -9,6 +9,7 @@ import com.mediaservice.domain.Genre
 import com.mediaservice.domain.repository.GenreRepository
 import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.ErrorCode
+import com.mediaservice.exception.InternalServerException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -41,8 +42,8 @@ class GenreService(
             this.genreRepository.update(
                 id,
                 genreForUpdate
-            ) ?: throw BadRequestException(
-                ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH GENRE $id"
+            ) ?: throw InternalServerException(
+                ErrorCode.INTERNAL_SERVER, "GENRE IS CHECKED, BUT EXCEPTION OCCURS"
             )
         )
     }

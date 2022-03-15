@@ -44,6 +44,15 @@ class Media(
             mediaSeries = MediaSeries.from(mediaEntity.mediaSeries)
         )
     }
+
+    fun update(name: String, synopsis: String, order: Int, url: String, thumbnail: String, runningTime: Int) {
+        this.name = name
+        this.synopsis = synopsis
+        this.order = order
+        this.url = url
+        this.thumbnail = thumbnail
+        this.runningTime = runningTime
+    }
 }
 
 class MediaEntity(id: EntityID<UUID>) : UUIDEntity(id) {

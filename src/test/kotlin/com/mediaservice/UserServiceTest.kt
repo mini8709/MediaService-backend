@@ -18,6 +18,7 @@ import com.mediaservice.domain.repository.RefreshTokenRepository
 import com.mediaservice.domain.repository.UserRepository
 import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.ErrorCode
+import com.mediaservice.exception.InternalServerException
 import com.mediaservice.exception.ServerUnavailableException
 import com.mediaservice.infrastructure.Authentication
 import com.mediaservice.infrastructure.GoogleMailSender
@@ -295,7 +296,7 @@ class UserServiceTest {
 
     @Test
     fun failUpdatePassword_CannotFindUpdatedUser() {
-        val exception = assertThrows(BadRequestException::class.java) {
+        val exception = assertThrows(InternalServerException::class.java) {
             // given
             val passwordUpdateRequestDto = PasswordUpdateRequestDto("1234", "test123!!")
             every { userRepository.findById(id) } returns this.user
@@ -305,7 +306,7 @@ class UserServiceTest {
             this.userService.updatePassword(id, passwordUpdateRequestDto)
         }
         // then
-        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+        assertEquals(ErrorCode.INTERNAL_SERVER, exception.errorCode)
     }
 
     @Test
@@ -339,7 +340,7 @@ class UserServiceTest {
 
     @Test
     fun failFindPassword_CannotFindUpdateUser() {
-        val exception = assertThrows(BadRequestException::class.java) {
+        val exception = assertThrows(InternalServerException::class.java) {
             // given
             val passwordFindRequestDto = PasswordFindRequestDto(email)
             every { userRepository.findByEmail(email) } returns user
@@ -350,7 +351,7 @@ class UserServiceTest {
             this.userService.findPassword(passwordFindRequestDto)
         }
         // then
-        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+        assertEquals(ErrorCode.INTERNAL_SERVER, exception.errorCode)
     }
 
     @Test
