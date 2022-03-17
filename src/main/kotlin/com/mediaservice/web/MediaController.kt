@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
+import javax.validation.Valid
 
 @RestController
 @RequestMapping("/api/v1/media")
@@ -46,7 +47,7 @@ class MediaController(private val mediaService: MediaService) {
     @PutMapping("/{id}")
     fun update(
         @PathVariable id: UUID,
-        @RequestBody mediaUpdateRequestDto: MediaUpdateRequestDto
+        @RequestBody @Valid mediaUpdateRequestDto: MediaUpdateRequestDto
     ): MediaResponseDto {
         return this.mediaService.update(
             id,

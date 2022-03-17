@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
+import javax.validation.Valid
 
 @RestController
 @RequestMapping("/api/v1/media-contents")
@@ -35,10 +36,10 @@ class MediaContentsController(private val mediaContentsService: MediaContentsSer
         )
     }
 
-    @PostMapping("/series/{id}")
+    @PostMapping("/{id}/series")
     fun createMediaSeries(
         @PathVariable id: UUID,
-        @RequestBody mediaSeriesCreateRequestDto: MediaSeriesCreateRequestDto
+        @RequestBody @Valid mediaSeriesCreateRequestDto: MediaSeriesCreateRequestDto
     ): MediaSeriesResponseDto {
         return this.mediaContentsService.createMediaSeries(
             id,
@@ -49,7 +50,7 @@ class MediaContentsController(private val mediaContentsService: MediaContentsSer
     @PutMapping("/series/{id}")
     fun updateMediaSeries(
         @PathVariable id: UUID,
-        @RequestBody mediaSeriesUpdateRequestDto: MediaSeriesUpdateRequestDto
+        @RequestBody @Valid mediaSeriesUpdateRequestDto: MediaSeriesUpdateRequestDto
     ): MediaSeriesResponseDto {
         return this.mediaContentsService.updateMediaSeries(id, mediaSeriesUpdateRequestDto)
     }
@@ -76,7 +77,7 @@ class MediaContentsController(private val mediaContentsService: MediaContentsSer
 
     @PostMapping
     fun createMediaContents(
-        @RequestBody mediaContentsCreateRequestDto: MediaContentsCreateRequestDto
+        @RequestBody @Valid mediaContentsCreateRequestDto: MediaContentsCreateRequestDto
     ): MediaContentsResponseDto {
         return this.mediaContentsService.createMediaContents(
             mediaContentsCreateRequestDto
@@ -86,7 +87,7 @@ class MediaContentsController(private val mediaContentsService: MediaContentsSer
     @PutMapping("/{id}")
     fun updateMediaContents(
         @PathVariable id: UUID,
-        @RequestBody mediaContentsUpdateRequestDto: MediaContentsUpdateRequestDto
+        @RequestBody @Valid mediaContentsUpdateRequestDto: MediaContentsUpdateRequestDto
     ): MediaContentsResponseDto {
         return this.mediaContentsService.updateMediaContents(id, mediaContentsUpdateRequestDto)
     }
