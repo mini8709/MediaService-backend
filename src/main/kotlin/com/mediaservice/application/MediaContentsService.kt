@@ -121,7 +121,7 @@ class MediaContentsService(
         val mediaList: List<Media> = this.mediaRepository.findByMediaSeriesId(mediaSeriesForDelete.id!!)
 
         mediaList.stream().forEach {
-            this.mediaRepository.deleteById(it.id)
+            this.mediaRepository.deleteById(it.id!!)
         }
 
         return MediaSeriesResponseDto.from(mediaSeriesForDelete)
@@ -251,7 +251,7 @@ class MediaContentsService(
             val mediaList: List<Media> = this.mediaRepository.findByMediaSeriesId(mediaSeries.id!!)
 
             mediaList.stream().forEach { media ->
-                this.mediaRepository.deleteById(media.id)
+                this.mediaRepository.deleteById(media.id!!)
             }
         }
 
