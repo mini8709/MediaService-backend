@@ -27,11 +27,10 @@ import kotlin.test.assertEquals
 
 class WishContentServiceTest {
     private val wishContentRepository = mockk<WishContentRepository>()
+    private lateinit var mediaAllSeriesId: UUID
     private val profileRepository = mockk<ProfileRepository>()
     private val mediaContentsRepository = mockk<MediaContentsRepository>()
-
     private val wishContentService: WishContentService = WishContentService(this.wishContentRepository, this.profileRepository, this.mediaContentsRepository)
-
     private lateinit var profileId: UUID
     private lateinit var mediaContentsId: UUID
     private lateinit var userId: UUID
@@ -51,6 +50,7 @@ class WishContentServiceTest {
     fun setup() {
         clearAllMocks()
         this.profileId = UUID.randomUUID()
+        this.mediaAllSeriesId = UUID.randomUUID()
         this.mediaContentsId = UUID.randomUUID()
         this.userId = UUID.randomUUID()
         this.wishContentId = UUID.randomUUID()
@@ -71,6 +71,17 @@ class WishContentServiceTest {
         this.wishContentResponseDto = WishContentResponseDto(wishContentId, "action", "title", "synopsis", "terailer", "thumbnail", "rate", false)
     }
 
+    @Test
+    fun successFind() {
+        // given
+        every { wishContentRepository.findByProfileId(profileId) } returns listOf(wishContent)
+
+        // when
+        val wishContentResponseDtoList = this.wishContentService.findByProfileId(profileId)
+
+        // then
+        assertEquals(wishContentResponseDtoList.get(0).profileName, wishContent.profile.name)
+    }
     @Test
     fun successCreate() {
         // given

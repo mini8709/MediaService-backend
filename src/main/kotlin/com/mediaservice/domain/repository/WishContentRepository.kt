@@ -10,6 +10,12 @@ import java.util.UUID
 
 @Repository
 class WishContentRepository {
+    fun findByProfileId(id: UUID): List<WishContent> {
+        return WishContentEntity.find {
+            WishContentTable.profile eq id and (WishContentTable.isDeleted eq false)
+        }.map { WishContent.from(it) }
+    }
+
     fun save(wishContent: WishContent): WishContent {
 
         val wishContentId = WishContentTable.insertAndGetId {

@@ -19,6 +19,12 @@ class WishContentService(
     private val mediaContentsRepository: MediaContentsRepository
 ) {
 
+    @Transactional(readOnly = true)
+    fun findByProfileId(id: UUID): List<WishContentResponseDto> {
+        return this.wishContentRepository.findByProfileId(id)
+            .map { wishContent -> WishContentResponseDto.from(wishContent) }
+    }
+
     @Transactional
     fun createWishContent(wishContentRequestDto: WishContentRequestDto, profileId: UUID): WishContentResponseDto {
         val mediaContentsId = wishContentRequestDto.mediaContentsId
