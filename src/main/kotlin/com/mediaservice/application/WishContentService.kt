@@ -2,6 +2,9 @@ package com.mediaservice.application
 
 import com.mediaservice.application.dto.media.WishContentRequestDto
 import com.mediaservice.application.dto.media.WishContentResponseDto
+import com.mediaservice.application.validator.IdEqualValidator
+import com.mediaservice.application.validator.IsDeletedValidator
+import com.mediaservice.domain.Profile
 import com.mediaservice.domain.WishContent
 import com.mediaservice.domain.repository.MediaContentsRepository
 import com.mediaservice.domain.repository.ProfileRepository
@@ -20,21 +23,55 @@ class WishContentService(
 ) {
 
     @Transactional(readOnly = true)
-    fun findByProfileId(id: UUID): List<WishContentResponseDto> {
-        return this.wishContentRepository.findByProfileId(id)
+    fun findByProfileId(
+        userId: UUID,
+        profileId: UUID
+    ): List<WishContentResponseDto> {
+        val profile = this.profileRepository.findById(profileId)
+            ?: throw BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                "NO SUCH PROFILE $profileId"
+            )
+
+        val validator = IsDeletedValidator(profile.isDeleted, Profile.DOMAIN)
+        validator.linkWith(IdEqualValidator(userId, profile.user.id!!))
+        validator.validate()
+
+        return this.wishContentRepository.findByProfileId(profileId)
             .map { wishContent -> WishContentResponseDto.from(wishContent) }
     }
 
     @Transactional
-    fun createWishContent(wishContentRequestDto: WishContentRequestDto, profileId: UUID): WishContentResponseDto {
-        val mediaContentsId = wishContentRequestDto.mediaContentsId
+    fun createWishContent(
+        userId: UUID,
+        profileId: UUID,
+        wishContentRequestDto: WishContentRequestDto
+    ): WishContentResponseDto {
         val mediaContents = mediaContentsRepository.findById(wishContentRequestDto.mediaContentsId)
-            ?: throw BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH USER $mediaContentsId")
-        val profile = profileRepository.findById(profileId)
-            ?: throw BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH USER $profileId")
+            ?: throw BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                "NO SUCH USER ${wishContentRequestDto.mediaContentsId}"
+            )
 
-        if (wishContentRepository.existsByProfileIdAndMediaAllSeriesId(profileId, mediaContentsId))
-            throw BadRequestException(ErrorCode.ROW_ALREADY_EXIST, "$mediaContentsId is Already Inserted in $profileId")
+        val profile = profileRepository.findById(profileId)
+            ?: throw BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                "NO SUCH USER $profileId"
+            )
+
+        if (wishContentRepository.existsByProfileIdAndMediaAllSeriesId(
+                profileId,
+                wishContentRequestDto.mediaContentsId
+            )
+        )
+            throw BadRequestException(
+                ErrorCode.ROW_ALREADY_EXIST,
+                "${wishContentRequestDto.mediaContentsId} is Already Inserted in $profileId"
+            )
+
+        val validator = IsDeletedValidator(profile.isDeleted, Profile.DOMAIN)
+        validator.linkWith(IdEqualValidator(userId, profile.user.id!!))
+        validator.validate()
 
         return WishContentResponseDto.from(
             this.wishContentRepository.save(
@@ -47,20 +84,34 @@ class WishContentService(
     }
 
     @Transactional
-    fun deleteWishContent(wishContentRequestDto: WishContentRequestDto, profileId: UUID): List<WishContentResponseDto> {
-        val mediaContentsId = wishContentRequestDto.mediaContentsId
+    fun deleteWishContent(
+        userId: UUID,
+        profileId: UUID,
+        wishContentRequestDto: WishContentRequestDto
+    ): WishContentResponseDto {
         val mediaContents = mediaContentsRepository.findById(wishContentRequestDto.mediaContentsId)
-            ?: throw BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH USER $mediaContentsId")
-        val profile = profileRepository.findById(profileId)
-            ?: throw BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, "NO SUCH USER $profileId")
-
-        return this.wishContentRepository.delete(
-            WishContent.of(
-                profile = profile,
-                mediaContents = mediaContents
+            ?: throw BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                "NO SUCH USER ${wishContentRequestDto.mediaContentsId}"
             )
-        )?.map {
-            WishContentResponseDto.from(it)
-        }
+
+        val profile = profileRepository.findById(profileId)
+            ?: throw BadRequestException(
+                ErrorCode.ROW_DOES_NOT_EXIST,
+                "NO SUCH USER $profileId"
+            )
+
+        val validator = IsDeletedValidator(profile.isDeleted, Profile.DOMAIN)
+        validator.linkWith(IdEqualValidator(userId, profile.user.id!!))
+        validator.validate()
+
+        return WishContentResponseDto.from(
+            this.wishContentRepository.delete(
+                WishContent.of(
+                    profile = profile,
+                    mediaContents = mediaContents
+                )
+            )
+        )
     }
 }

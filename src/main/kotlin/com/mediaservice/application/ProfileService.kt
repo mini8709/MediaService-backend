@@ -124,12 +124,14 @@ class ProfileService(
 
     @Transactional
     fun createLike(
+        userId: UUID,
+        profileId: UUID,
         likeRequestDto: LikeRequestDto
     ): LikeResponseDto {
-        val profile = this.profileRepository.findById(likeRequestDto.profileId)
+        val profile = this.profileRepository.findById(profileId)
             ?: throw BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
-                "NO SUCH PROFILE ${likeRequestDto.profileId}"
+                "NO SUCH PROFILE $profileId"
             )
 
         val mediaAllSeries = this.mediaContentsRepository.findById(likeRequestDto.mediaAllSeriesId)
@@ -138,7 +140,8 @@ class ProfileService(
                 "NO SUCH MEDIA ALL SERIES ${likeRequestDto.mediaAllSeriesId}"
             )
 
-        val validator: Validator = IsDeletedValidator(profile.isDeleted, Profile.DOMAIN)
+        val validator = IsDeletedValidator(profile.isDeleted, Profile.DOMAIN)
+        validator.linkWith(IdEqualValidator(userId, profile.user.id!!))
         validator.validate()
 
         return LikeResponseDto.from(
@@ -148,12 +151,14 @@ class ProfileService(
 
     @Transactional
     fun deleteLike(
+        userId: UUID,
+        profileId: UUID,
         likeRequestDto: LikeRequestDto
     ): LikeResponseDto {
-        val profile = this.profileRepository.findById(likeRequestDto.profileId)
+        val profile = this.profileRepository.findById(profileId)
             ?: throw BadRequestException(
                 ErrorCode.ROW_DOES_NOT_EXIST,
-                "NO SUCH PROFILE ${likeRequestDto.profileId}"
+                "NO SUCH PROFILE $profileId"
             )
 
         val mediaAllSeries = this.mediaContentsRepository.findById(likeRequestDto.mediaAllSeriesId)
@@ -162,7 +167,8 @@ class ProfileService(
                 "NO SUCH MEDIA ALL SERIES ${likeRequestDto.mediaAllSeriesId}"
             )
 
-        val validator: Validator = IsDeletedValidator(profile.isDeleted, Profile.DOMAIN)
+        val validator = IsDeletedValidator(profile.isDeleted, Profile.DOMAIN)
+        validator.linkWith(IdEqualValidator(userId, profile.user.id!!))
         validator.validate()
 
         return LikeResponseDto.from(

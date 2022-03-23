@@ -350,7 +350,7 @@ class ProfileServiceTest {
     @Test
     fun successCreateLike() {
         // given
-        val likeRequestDto = LikeRequestDto(profileId, mediaContentsId)
+        val likeRequestDto = LikeRequestDto(mediaContentsId)
         every {
             profileRepository.findById(profileId)
         } returns profile
@@ -362,7 +362,7 @@ class ProfileServiceTest {
         } returns like
 
         // when
-        val likeResponseDto: LikeResponseDto = profileService.createLike(likeRequestDto)
+        val likeResponseDto: LikeResponseDto = profileService.createLike(userId, profileId, likeRequestDto)
 
         // then
         assertEquals(likeRequestDto.mediaAllSeriesId, likeResponseDto.mediaContentsId)
@@ -372,12 +372,12 @@ class ProfileServiceTest {
     fun failCreateLike_noProfile() {
         // given
         val exception = assertThrows(BadRequestException::class.java) {
-            val likeRequestDto = LikeRequestDto(profileId, mediaContentsId)
+            val likeRequestDto = LikeRequestDto(mediaContentsId)
             every {
                 profileRepository.findById(any())
             } returns null
             // when
-            profileService.createLike(likeRequestDto)
+            profileService.createLike(userId, profileId, likeRequestDto)
         }
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
@@ -387,7 +387,7 @@ class ProfileServiceTest {
     fun failCreateLike_noMediaAllSeries() {
         // given
         val exception = assertThrows(BadRequestException::class.java) {
-            val likeRequestDto = LikeRequestDto(profileId, mediaContentsId)
+            val likeRequestDto = LikeRequestDto(mediaContentsId)
             every {
                 profileRepository.findById(profileId)
             } returns profile
@@ -395,7 +395,7 @@ class ProfileServiceTest {
                 mediaAllSeriesRepository.findById(mediaContentsId)
             } returns null
             // when
-            profileService.createLike(likeRequestDto)
+            profileService.createLike(userId, profileId, likeRequestDto)
         }
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
@@ -405,7 +405,7 @@ class ProfileServiceTest {
     fun failCreateLike_profileDeleted() {
         // given
         val exception = assertThrows(BadRequestException::class.java) {
-            val likeRequestDto = LikeRequestDto(profileId, mediaContentsId)
+            val likeRequestDto = LikeRequestDto(mediaContentsId)
             every {
                 profileRepository.findById(profileId)
             } returns profileAlreadyDeleted
@@ -413,7 +413,7 @@ class ProfileServiceTest {
                 mediaAllSeriesRepository.findById(mediaContentsId)
             } returns mediaContents
             // when
-            profileService.createLike(likeRequestDto)
+            profileService.createLike(userId, profileId, likeRequestDto)
         }
         // then
         assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)
@@ -422,7 +422,7 @@ class ProfileServiceTest {
     @Test
     fun successDeleteLike() {
         // given
-        val likeRequestDto = LikeRequestDto(profileId, mediaContentsId)
+        val likeRequestDto = LikeRequestDto(mediaContentsId)
         every {
             profileRepository.findById(profileId)
         } returns profile
@@ -434,7 +434,7 @@ class ProfileServiceTest {
         } returns like
 
         // when
-        val likeResponseDto: LikeResponseDto = profileService.deleteLike(likeRequestDto)
+        val likeResponseDto: LikeResponseDto = profileService.deleteLike(userId, profileId, likeRequestDto)
 
         // then
         assertEquals(likeRequestDto.mediaAllSeriesId, likeResponseDto.mediaContentsId)
@@ -444,12 +444,12 @@ class ProfileServiceTest {
     fun failDeleteLike_noProfile() {
         // given
         val exception = assertThrows(BadRequestException::class.java) {
-            val likeRequestDto = LikeRequestDto(profileId, mediaContentsId)
+            val likeRequestDto = LikeRequestDto(mediaContentsId)
             every {
                 profileRepository.findById(any())
             } returns null
             // when
-            profileService.deleteLike(likeRequestDto)
+            profileService.deleteLike(userId, profileId, likeRequestDto)
         }
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
@@ -459,7 +459,7 @@ class ProfileServiceTest {
     fun failDeleteLike_noMediaAllSeries() {
         // given
         val exception = assertThrows(BadRequestException::class.java) {
-            val likeRequestDto = LikeRequestDto(profileId, mediaContentsId)
+            val likeRequestDto = LikeRequestDto(mediaContentsId)
             every {
                 profileRepository.findById(profileId)
             } returns profile
@@ -467,7 +467,7 @@ class ProfileServiceTest {
                 mediaAllSeriesRepository.findById(mediaContentsId)
             } returns null
             // when
-            profileService.deleteLike(likeRequestDto)
+            profileService.deleteLike(userId, profileId, likeRequestDto)
         }
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
@@ -477,7 +477,7 @@ class ProfileServiceTest {
     fun failDeleteLike_profileDeleted() {
         // given
         val exception = assertThrows(BadRequestException::class.java) {
-            val likeRequestDto = LikeRequestDto(profileId, mediaContentsId)
+            val likeRequestDto = LikeRequestDto(mediaContentsId)
             every {
                 profileRepository.findById(profileId)
             } returns profileAlreadyDeleted
@@ -485,7 +485,7 @@ class ProfileServiceTest {
                 mediaAllSeriesRepository.findById(mediaContentsId)
             } returns mediaContents
             // when
-            profileService.deleteLike(likeRequestDto)
+            profileService.deleteLike(userId, profileId, likeRequestDto)
         }
         // then
         assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)

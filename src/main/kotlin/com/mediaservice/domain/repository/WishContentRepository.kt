@@ -17,13 +17,11 @@ class WishContentRepository {
     }
 
     fun save(wishContent: WishContent): WishContent {
-
-        val wishContentId = WishContentTable.insertAndGetId {
+        wishContent.id = WishContentTable.insertAndGetId {
             it[mediaContents] = wishContent.mediaContents.id
             it[profile] = wishContent.profile.id
             it[isDeleted] = false
-        }
-        wishContent.id = wishContentId.value
+        }.value
 
         return wishContent
     }
@@ -34,18 +32,13 @@ class WishContentRepository {
         }.empty()
     }
 
-    fun delete(wishContent: WishContent): List<WishContent> {
-        return WishContentEntity.find {
+    fun delete(wishContent: WishContent): WishContent {
+        val wishContentEntity = WishContentEntity.find {
             WishContentTable.profile eq wishContent.profile.id and (WishContentTable.mediaContents eq wishContent.mediaContents.id) and (WishContentTable.isDeleted eq false)
-        }?.map {
-            it.isDeleted = true
-            WishContent.from(it)
-        }
-    }
+        }.first()
 
-    fun findByProfileIdAndMediaAllSeriesId(profileId: UUID, mediaAllSeriesId: UUID): Boolean {
-        return !WishContentEntity.find {
-            WishContentTable.profile eq profileId and (WishContentTable.mediaContents eq mediaAllSeriesId) and (WishContentTable.isDeleted eq false)
-        }.empty()
+        wishContentEntity.isDeleted = true
+
+        return WishContent.from(wishContentEntity)
     }
 }

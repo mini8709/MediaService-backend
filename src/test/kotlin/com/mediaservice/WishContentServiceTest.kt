@@ -2,7 +2,6 @@ package com.mediaservice
 
 import com.mediaservice.application.WishContentService
 import com.mediaservice.application.dto.media.WishContentRequestDto
-import com.mediaservice.application.dto.media.WishContentResponseDto
 import com.mediaservice.domain.Actor
 import com.mediaservice.domain.Creator
 import com.mediaservice.domain.Genre
@@ -39,8 +38,6 @@ class WishContentServiceTest {
     private lateinit var wishContent: WishContent
     private lateinit var mediaContents: MediaContents
 
-    private lateinit var wishContentRequestDto: WishContentRequestDto
-    private lateinit var wishContentResponseDto: WishContentResponseDto
     private lateinit var actorList: List<Actor>
     private lateinit var genreList: List<Genre>
     private lateinit var creatorList: List<Creator>
@@ -64,43 +61,48 @@ class WishContentServiceTest {
             "test thumbnail url", "19+", false, false, this.actorList, this.genreList, this.creatorList
         )
         this.wishContent = WishContent(wishContentId, mediaContents, profile, false)
-
-        this.wishContentRequestDto = WishContentRequestDto(mediaContentsId)
-        this.wishContentResponseDto = WishContentResponseDto(wishContentId, "action", "title", "synopsis", "terailer", "thumbnail", "rate", false)
     }
 
     @Test
-    fun successFind() {
+    fun successFindByProfileId() {
         // given
+        every { profileRepository.findById(profileId) } returns profile
         every { wishContentRepository.findByProfileId(profileId) } returns listOf(wishContent)
 
         // when
-        val wishContentResponseDtoList = this.wishContentService.findByProfileId(profileId)
-    }
-    @Test
-    fun successDelete() {
-        // given
-        every { mediaContentsRepository.findById(mediaContentsId) } returns mediaContents
-        every { profileRepository.findById(profileId) } returns profile
-        every { wishContentRepository.findByProfileIdAndMediaAllSeriesId(profileId, mediaContentsId) } returns false
-        every { wishContentRepository.delete(any()) } returns listOf(wishContent)
-
-        // when
-        val wishContentResponseDtoList = this.wishContentService.deleteWishContent(wishContentRequestDto, profileId)
+        val wishContentResponseDtoList = this.wishContentService.findByProfileId(userId, profileId)
 
         // then
-        assertEquals(wishContentResponseDtoList.get(0).profileName, wishContent.profile.name)
+        assertEquals(wishContentResponseDtoList[0].profileName, wishContent.profile.name)
     }
+
+    @Test
+    fun failFindByProfileId_noProfile() {
+        val exception = Assertions.assertThrows(BadRequestException::class.java) {
+            // given
+            every { profileRepository.findById(profileId) } returns null
+            every { wishContentRepository.findByProfileId(profileId) } returns listOf(wishContent)
+
+            // when
+            this.wishContentService.findByProfileId(userId, profileId)
+        }
+
+        // then
+        assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
+    }
+
     @Test
     fun successCreate() {
         // given
+        val wishContentRequestDto = WishContentRequestDto(mediaContentsId)
+
         every { mediaContentsRepository.findById(mediaContentsId) } returns mediaContents
         every { profileRepository.findById(profileId) } returns profile
         every { wishContentRepository.existsByProfileIdAndMediaAllSeriesId(profileId, mediaContentsId) } returns false
         every { wishContentRepository.save(any()) } returns wishContent
 
         // when
-        val wishContentResponseDto = this.wishContentService.createWishContent(wishContentRequestDto, profileId)
+        val wishContentResponseDto = this.wishContentService.createWishContent(userId, profileId, wishContentRequestDto)
 
         // then
         assertEquals(wishContentResponseDto.profileName, wishContent.profile.name)
@@ -110,13 +112,15 @@ class WishContentServiceTest {
     fun failCreate_AlreadyInserted() {
         val exception = Assertions.assertThrows(BadRequestException::class.java) {
             // given
+            val wishContentRequestDto = WishContentRequestDto(mediaContentsId)
+
             every { mediaContentsRepository.findById(mediaContentsId) } returns mediaContents
             every { profileRepository.findById(profileId) } returns profile
             every { wishContentRepository.existsByProfileIdAndMediaAllSeriesId(profileId, mediaContentsId) } returns true
             every { wishContentRepository.save(any()) } returns wishContent
 
             // when
-            this.wishContentService.createWishContent(wishContentRequestDto, profileId)
+            this.wishContentService.createWishContent(userId, profileId, wishContentRequestDto)
         }
 
         // then
@@ -124,16 +128,35 @@ class WishContentServiceTest {
     }
 
     @Test
+    fun successDelete() {
+        // given
+        val wishContentRequestDto = WishContentRequestDto(mediaContentsId)
+
+        every { mediaContentsRepository.findById(mediaContentsId) } returns mediaContents
+        every { profileRepository.findById(profileId) } returns profile
+        every { wishContentRepository.existsByProfileIdAndMediaAllSeriesId(profileId, mediaContentsId) } returns false
+        every { wishContentRepository.delete(any()) } returns wishContent
+
+        // when
+        val wishContentResponseDtoList = this.wishContentService.deleteWishContent(userId, profileId, wishContentRequestDto)
+
+        // then
+        assertEquals(wishContentResponseDtoList.profileName, wishContent.profile.name)
+    }
+
+    @Test
     fun failDelete_noProfile() {
         val exception = Assertions.assertThrows(BadRequestException::class.java) {
             // given
+            val wishContentRequestDto = WishContentRequestDto(mediaContentsId)
+
             every { mediaContentsRepository.findById(mediaContentsId) } returns mediaContents
             every { profileRepository.findById(profileId) } returns null
-            every { wishContentRepository.findByProfileIdAndMediaAllSeriesId(profileId, mediaContentsId) } returns false
+            every { wishContentRepository.existsByProfileIdAndMediaAllSeriesId(profileId, mediaContentsId) } returns false
             every { wishContentRepository.save(any()) } returns wishContent
 
             // when
-            this.wishContentService.deleteWishContent(wishContentRequestDto, profileId)
+            this.wishContentService.deleteWishContent(userId, profileId, wishContentRequestDto)
         }
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
@@ -143,13 +166,15 @@ class WishContentServiceTest {
     fun failDelete_noMediaAllSeries() {
         val exception = Assertions.assertThrows(BadRequestException::class.java) {
             // given
+            val wishContentRequestDto = WishContentRequestDto(mediaContentsId)
+
             every { mediaContentsRepository.findById(mediaContentsId) } returns null
             every { profileRepository.findById(profileId) } returns profile
-            every { wishContentRepository.findByProfileIdAndMediaAllSeriesId(profileId, mediaContentsId) } returns false
+            every { wishContentRepository.existsByProfileIdAndMediaAllSeriesId(profileId, mediaContentsId) } returns false
             every { wishContentRepository.save(any()) } returns wishContent
 
             // when
-            this.wishContentService.deleteWishContent(wishContentRequestDto, profileId)
+            this.wishContentService.deleteWishContent(userId, profileId, wishContentRequestDto)
         }
         // then
         assertEquals(ErrorCode.ROW_DOES_NOT_EXIST, exception.errorCode)
