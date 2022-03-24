@@ -4,9 +4,11 @@ import com.mediaservice.application.CreatorService
 import com.mediaservice.application.dto.media.CreatorCreateRequestDto
 import com.mediaservice.application.dto.media.CreatorUpdateRequestDto
 import com.mediaservice.domain.Creator
+import com.mediaservice.domain.Profile
 import com.mediaservice.domain.Role
 import com.mediaservice.domain.User
 import com.mediaservice.domain.repository.CreatorRepository
+import com.mediaservice.domain.repository.ProfileRepository
 import com.mediaservice.exception.BadRequestException
 import com.mediaservice.exception.ErrorCode
 import io.mockk.clearAllMocks
@@ -21,10 +23,13 @@ import kotlin.test.assertEquals
 
 class CreatorServiceTest {
     private val creatorRepository = mockk<CreatorRepository>()
-    private val creatorService: CreatorService = CreatorService(this.creatorRepository)
+    private val profileRepository = mockk<ProfileRepository>()
+    private val creatorService: CreatorService = CreatorService(this.creatorRepository, this.profileRepository)
     private lateinit var creatorId: UUID
     private lateinit var adminId: UUID
     private lateinit var userId: UUID
+    private lateinit var profileId: UUID
+    private lateinit var profile: Profile
     private lateinit var creator: Creator
     private lateinit var updatedCreator: Creator
     private lateinit var deletedCreator: Creator
@@ -37,11 +42,13 @@ class CreatorServiceTest {
         this.creatorId = UUID.randomUUID()
         this.adminId = UUID.randomUUID()
         this.userId = UUID.randomUUID()
+        this.profileId = UUID.randomUUID()
         this.creator = Creator(this.creatorId, "test Creator", isDeleted = false)
         this.updatedCreator = Creator(this.creatorId, "update Creator", isDeleted = false)
         this.deletedCreator = Creator(this.creatorId, "test Creator", isDeleted = true)
         this.admin = User(this.adminId, "admin@gmail.com", "1234", Role.ADMIN)
         this.user = User(this.userId, "user@gmail.com", "1234", Role.USER)
+        this.profile = Profile(profileId, this.user, "test profile", "19+", "test.jpg", false)
     }
 
     @Test
@@ -146,5 +153,18 @@ class CreatorServiceTest {
 
         // then
         assertEquals(ErrorCode.ROW_ALREADY_DELETED, exception.errorCode)
+    }
+
+    @Test
+    fun findCreator() {
+        // given
+        every { creatorRepository.findAll() } returns listOf(this.creator)
+        every { profileRepository.findById(profileId) } returns this.profile
+
+        // when
+        val creators = this.creatorService.findAll(this.userId, this.profileId)
+
+        // then
+        assertEquals(1, creators.size)
     }
 }
