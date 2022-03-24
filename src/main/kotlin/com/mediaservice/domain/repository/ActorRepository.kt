@@ -2,6 +2,8 @@ package com.mediaservice.domain.repository
 
 import com.mediaservice.domain.Actor
 import com.mediaservice.domain.ActorEntity
+import com.mediaservice.domain.ActorTable
+import org.jetbrains.exposed.sql.and
 import org.springframework.stereotype.Repository
 import java.util.UUID
 
@@ -38,5 +40,13 @@ class ActorRepository {
             it.isDeleted = true
             return Actor.from(it)
         }
+    }
+
+    fun searchByName(name: String): List<Actor> {
+        return ActorEntity.find {
+            (ActorTable.name like "%$name%") and (ActorTable.isDeleted eq false)
+        }.map {
+            Actor.from(it)
+        }.toList()
     }
 }

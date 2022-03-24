@@ -2,6 +2,8 @@ package com.mediaservice.domain.repository
 
 import com.mediaservice.domain.Genre
 import com.mediaservice.domain.GenreEntity
+import com.mediaservice.domain.GenreTable
+import org.jetbrains.exposed.sql.and
 import org.springframework.stereotype.Repository
 import java.util.UUID
 
@@ -38,5 +40,13 @@ class GenreRepository {
             it.isDeleted = true
             return Genre.from(it)
         }
+    }
+
+    fun searchByName(name: String): List<Genre> {
+        return GenreEntity.find {
+            (GenreTable.name like "%$name%") and (GenreTable.isDeleted eq false)
+        }.map {
+            Genre.from(it)
+        }.toList()
     }
 }

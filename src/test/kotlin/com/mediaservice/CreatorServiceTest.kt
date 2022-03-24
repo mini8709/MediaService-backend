@@ -167,4 +167,16 @@ class CreatorServiceTest {
         // then
         assertEquals(1, creators.size)
     }
+
+    @Test
+    fun successSearchByName() {
+        // given
+        every { creatorRepository.searchByName("test") } returns listOf(this.creator)
+
+        // when
+        val creatorList = this.creatorService.searchByName("test")
+
+        // then
+        assertEquals(this.creator.name, creatorList[0].name)
+    }
 }

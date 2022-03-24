@@ -167,4 +167,16 @@ class GenreServiceTest {
         // then
         assertEquals(1, genres.size)
     }
+
+    @Test
+    fun successSearchByName() {
+        // given
+        every { genreRepository.searchByName("test") } returns listOf(this.genre)
+
+        // when
+        val genreList = this.genreService.searchByName("test")
+
+        // then
+        assertEquals(this.genre.name, genreList[0].name)
+    }
 }

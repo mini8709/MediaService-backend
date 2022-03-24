@@ -88,4 +88,12 @@ class CreatorService(
             CreatorResponseDto.from(it)
         }.toList()
     }
+
+    @Transactional(readOnly = true)
+    fun searchByName(name: String): List<CreatorResponseDto> {
+
+        return this.creatorRepository.searchByName(name).map {
+            CreatorResponseDto.from(it)
+        }
+    }
 }

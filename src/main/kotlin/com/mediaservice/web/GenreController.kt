@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 import javax.validation.Valid
@@ -51,5 +52,12 @@ class GenreController(private val genreService: GenreService) {
             UUID.fromString(userId),
             UUID.fromString(profileId)
         )
+    }
+
+    @GetMapping("/search")
+    fun searchByName(
+        @RequestParam name: String
+    ): List<GenreResponseDto> {
+        return this.genreService.searchByName(name)
     }
 }

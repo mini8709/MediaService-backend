@@ -28,7 +28,7 @@ class AppInitiator {
                 SchemaUtils.drop(
                     UserTable, ProfileTable, MediaTable, MediaSeriesTable, MediaContentsTable,
                     ActorTable, CreatorTable, GenreTable, MediaContentsActorTable, MediaContentsGenreTable,
-                    MediaContentsTable, LikeTable, WishContentTable
+                    MediaContentsCreatorTable, LikeTable, WishContentTable
                 )
                 SchemaUtils.create(
                     UserTable, ProfileTable, MediaTable, MediaSeriesTable, MediaContentsTable,

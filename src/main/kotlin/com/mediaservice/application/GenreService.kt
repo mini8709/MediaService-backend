@@ -89,4 +89,12 @@ class GenreService(
             GenreResponseDto.from(it)
         }.toList()
     }
+
+    @Transactional(readOnly = true)
+    fun searchByName(name: String): List<GenreResponseDto> {
+
+        return this.genreRepository.searchByName(name).map {
+            GenreResponseDto.from(it)
+        }
+    }
 }

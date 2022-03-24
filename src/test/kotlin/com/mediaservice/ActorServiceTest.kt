@@ -167,4 +167,16 @@ class ActorServiceTest {
         // then
         assertEquals(1, actors.size)
     }
+
+    @Test
+    fun successSearchByName() {
+        // given
+        every { actorRepository.searchByName("test") } returns listOf(this.actor)
+
+        // when
+        val actorList = this.actorService.searchByName("test")
+
+        // then
+        assertEquals(this.actor.name, actorList[0].name)
+    }
 }

@@ -89,4 +89,12 @@ class ActorService(
             ActorResponseDto.from(it)
         }.toList()
     }
+
+    @Transactional(readOnly = true)
+    fun searchByName(name: String): List<ActorResponseDto> {
+
+        return this.actorRepository.searchByName(name).map {
+            ActorResponseDto.from(it)
+        }
+    }
 }

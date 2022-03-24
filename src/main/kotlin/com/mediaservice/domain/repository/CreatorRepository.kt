@@ -2,6 +2,8 @@ package com.mediaservice.domain.repository
 
 import com.mediaservice.domain.Creator
 import com.mediaservice.domain.CreatorEntity
+import com.mediaservice.domain.CreatorTable
+import org.jetbrains.exposed.sql.and
 import org.springframework.stereotype.Repository
 import java.util.UUID
 
@@ -38,5 +40,13 @@ class CreatorRepository {
             it.isDeleted = true
             return Creator.from(it)
         }
+    }
+
+    fun searchByName(name: String): List<Creator> {
+        return CreatorEntity.find {
+            (CreatorTable.name like "%$name%") and (CreatorTable.isDeleted eq false)
+        }.map {
+            Creator.from(it)
+        }.toList()
     }
 }
